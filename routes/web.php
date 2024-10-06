@@ -5,6 +5,7 @@ use App\Http\Controllers\CarController;
 use App\Http\Controllers\CarTypeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PromotionController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SeatController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TripController;
@@ -142,3 +143,10 @@ Route::get('/admin/promotion', [PromotionController::class, 'promotionManagement
 Route::post('/admin/promotion/create', [PromotionController::class, 'addPromotion'])->name('promotion.create');
 Route::put('/admin/promotion/update', [PromotionController::class, 'updatePromotion'])->name('promotion.update');
 Route::get('/admin/promotion/update/{id}',  [PromotionController::class, 'deletePromotion'])->name('promotion.delete');
+Route::post('/admin/promotion/apply', [PromotionController::class, 'apply'])->name('apply.promo');
+
+
+//Report
+Route::get('/admin/report/page={page}', [ReportController::class, 'reportManagement'])->name('report');
+Route::get('/admin/report/search/page={page}', [ReportController::class, 'search'])->name('report.search');
+Route::post('/admin/report/report-excel', [ReportController::class, 'reportExcel'])->name('report.excel');

@@ -1,7 +1,8 @@
 @extends('layouts.app')
+
 <style>
     body {
-        background-image: url('background.jpg');
+        background-image: url('{{ asset('images/background-bus.jpeg') }}');
         /* Thay 'background.jpg' bằng đường dẫn đến hình nền của bạn */
         background-size: cover;
         background-position: center;
@@ -20,12 +21,54 @@
     }
 
     .form-container {
-        background: rgba(255, 255, 255, 0.8);
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        background: rgba(255, 255, 255, 0.9);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         max-width: 500px;
         width: 100%;
+    }
+
+    h2 {
+        color: #ff6f61;
+        font-family: 'Poppins', sans-serif;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+    }
+
+    label {
+        color: #333;
+        font-weight: bold;
+    }
+
+    .form-control {
+        border-radius: 25px;
+        padding: 10px 15px;
+        font-size: 16px;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        border: 1px solid #ff6f61;
+    }
+
+    .form-control:focus {
+        border-color: #ff6f61;
+        box-shadow: 0 0 10px rgba(255, 111, 97, 0.3);
+    }
+
+    .btn-primary {
+        background-color: #ff6f61;
+        border-color: #ff6f61;
+        font-size: 18px;
+        border-radius: 25px;
+        padding: 10px 20px;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    .btn-primary:hover {
+        background-color: #ff8566;
+        border-color: #ff8566;
     }
 
     .footer {
@@ -34,34 +77,30 @@
         text-align: center;
     }
 </style>
+
 @section('content')
     <!-- Content -->
     <div class="container">
         <div class="form-container">
-            <h2 class="text-center">Đặt vé xe trực tuyến</h2>
+            <h2>Đặt vé xe trực tuyến</h2>
             <form method="POST" action="{{ route('booking.search') }}">
                 @csrf
                 <div class="form-group">
                     <label for="departure">Điểm đi:</label>
                     <select class="form-control" id="departure" name="departure">
-                        <!-- Option values should come from server-side or JavaScript -->
                         <option value="" disabled selected>Chọn điểm đi</option>
-                        <!-- Replace the following options with dynamic values from server-side data -->
                         @foreach ($departures as $departure)
                             <option value="{{ $departure['departure'] }}">{{ $departure['departure'] }}</option>
                         @endforeach
-                        <!-- Add more options as needed -->
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="destination">Điểm đến:</label>
                     <select class="form-control" id="destination" name="destination">
-                        <!-- Option values should come from server-side or JavaScript -->
                         <option value="" disabled selected>Chọn điểm đến</option>
                         @foreach ($destinations as $destination)
                             <option value="{{ $destination['destination'] }}">{{ $destination['destination'] }}</option>
                         @endforeach
-                        <!-- Options will be updated dynamically -->
                     </select>
                 </div>
                 <div class="form-group">
@@ -81,15 +120,15 @@
             dateInput.value = today;
             dateInput.setAttribute('min', today);
 
-            // Hàm để loại bỏ giá trị trùng lặp
+            // Function to remove duplicate values
             function removeDuplicates(array) {
                 return [...new Set(array)];
             }
 
-            // Hàm thêm tùy chọn vào thẻ select
+            // Populate select dropdowns with unique options
             function populateSelect(id, options) {
                 const select = document.getElementById(id);
-                const uniqueOptions = removeDuplicates(options); // Loại bỏ giá trị trùng lặp
+                const uniqueOptions = removeDuplicates(options);
 
                 uniqueOptions.forEach(option => {
                     const opt = document.createElement('option');
@@ -99,51 +138,34 @@
                 });
             }
 
-            // Kiểm tra form trước khi submit
+            // Form validation before submit
             document.querySelector('form').addEventListener('submit', function(event) {
                 const departure = document.getElementById('departure').value;
                 const destination = document.getElementById('destination').value;
 
                 if (!departure) {
                     alert('Vui lòng chọn điểm đi.');
-                    event.preventDefault(); // Ngăn không cho form submit
+                    event.preventDefault();
                     return;
                 }
 
                 if (!destination) {
                     alert('Vui lòng chọn điểm đến.');
-                    event.preventDefault(); // Ngăn không cho form submit
+                    event.preventDefault();
                     return;
                 }
             });
         });
 
-        // const departureOptions = [
-        //     'Hà Nội',
-        //     'Hồ Chí Minh',
-        //     'Đà Nẵng'
-        //     // Add more options as needed
-        // ];
-
         function updateDestinations() {
             const departure = document.getElementById('departure').value;
             const destination = document.getElementById('destination').value;
 
-            // Clear existing options
             destination.innerHTML = '<option value="" disabled selected>Chọn điểm đến</option>';
 
-            // Add options based on departure
-            // departureOptions.forEach(place => {
-            //     if (place !== departure) {
-            //         const option = document.createElement('option');
-            //         option.value = place;
-            //         option.textContent = place;
-            //         destination.appendChild(option);
-            //     }
-            // });
+            // Add new options to destination based on departure
         }
 
-        // Initialize destinations on page load
         document.addEventListener('DOMContentLoaded', updateDestinations);
     </script>
 

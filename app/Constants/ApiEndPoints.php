@@ -49,4 +49,7 @@ class ApiEndpoints
     public const API_SEATS_MAP_ADD = self::BASE_URL . 'seat/';
     public const API_SEATS_MAP_BY_CAR_GET = self::BASE_URL . 'seat/seats-map/';
     public const API_SEATS_MAP_GET = self::BASE_URL . 'seat/seats-map';
+
+    // Report
+    public const API_REPORT_SEARCH = self::BASE_URL . 'report/search';
 }

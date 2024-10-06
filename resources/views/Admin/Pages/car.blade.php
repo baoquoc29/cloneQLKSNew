@@ -131,7 +131,7 @@
                             <ul class="pagination">
                                 @if ($currentPage > 1)
                                     <li class="page-item">
-                                        <a class="page-link" href="{{ route('car', ['page' => $currentPage - 1]) }}"
+                                        <a class="page-link" href="{{ route('report', ['page' => $currentPage - 1]) }}"
                                             aria-label="Previous">
                                             <span aria-hidden="true">&laquo;</span>
                                         </a>

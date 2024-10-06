@@ -70,9 +70,11 @@
 
                     <div class="seat-summary">
                         <h4>Danh sách ghế đã chọn</h4>
-                        <ul id="selected-seats-list">
-                        </ul>
+                        <ul id="selected-seats-list"></ul>
                         <p><strong>Tổng tiền:</strong> <span id="total-price">0 VNĐ</span></p>
+                        <p><strong>Giảm giá</strong> <span id="discount-amount" class="text-danger">0 VNĐ</span>
+                        </p>
+                        <p><strong>Tổng tiền phải trả:</strong> <span id="total-after-discount">0 VNĐ</span></p>
                     </div>
                 </div>
             </div>
@@ -104,16 +106,19 @@
                             <input type="text" id="name" name="name" class="form-control" required>
                             <span class="error text-danger"></span>
                         </div>
+
                         <div class="form-group mb-3">
                             <label for="phone" class="form-label">Số điện thoại:</label>
                             <input type="tel" id="phone" name="phone" class="form-control" required>
-                            <span class="error text-danger"></span>
+                            <span class="error text-danger" id="phone-error"></span>
                         </div>
+
                         <div class="form-group mb-3">
                             <label for="email" class="form-label">Email:</label>
                             <input type="email" id="email" name="email" class="form-control" required>
-                            <span class="error text-danger"></span>
+                            <span class="error text-danger" id="email-error"></span>
                         </div>
+
                         <div class="form-group mb-3">
                             <label for="pickup-location" class="form-label">Địa điểm đón:</label>
                             <input type="text" id="pickup-location" name="pickup_location" class="form-control"
@@ -126,7 +131,12 @@
                         </div>
                         <div class="form-group mb-4">
                             <label for="promotion_code" class="form-label">Mã khuyến mại:</label>
-                            <input type="text" id="promotion_code" name="promotion_code" class="form-control">
+                            <div class="input-group">
+                                <input type="text" id="promotion_code" name="promotion_code" class="form-control">
+                                <button type="button" class="btn btn-secondary" id="apply-promo-btn">Áp dụng</button>
+                            </div>
+                            <span class="error text-danger" id="promo-error"></span>
+                            <span class="discount-info text-success" id="promo-success"></span>
                         </div>
                         <button type="submit" class="btn btn-primary w-100" id="submit-button" disabled>Thanh
                             toán</button>
@@ -204,8 +214,169 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
+    <script>
+        $(document).ready(function() {
+            let promoApplied = false;
+            let discountAmount = 0;
+
+            $('#apply-promo-btn').click(function() {
+                if (promoApplied) {
+                    // Nếu mã khuyến mại đã được áp dụng, người dùng đang hủy
+                    resetPromo();
+                } else {
+                    applyPromoOrDiscount(); // Gọi phương thức mới
+                }
+            });
+
+            function applyPromoOrDiscount() {
+                const promoCode = $('#promotion_code').val();
+                const discountAmountElement = $('#discount-amount');
+                let discountValue = 0;
+
+                if (promoCode === '') {
+                    $('#promo-error').text('Vui lòng nhập mã khuyến mại.');
+                    return;
+                }
+
+                // Kiểm tra mã khuyến mại
+                if (promoCode === 'PROMO123') {
+                    discountValue = 50000; // Giảm giá 50,000 VNĐ
+                } else if (promoCode === "MAUDEAL") {
+                    discountValue = 10000; // Giảm giá 10,000 VNĐ
+                } else {
+                    $('#promo-error').text('Mã khuyến mại không hợp lệ hoặc đã hết hạn.');
+                    return;
+                }
+
+                discountAmount = discountValue; // Gán giá trị giảm giá
+                $('#promo-error').text('');
+                $('#promo-success').text(`Mã khuyến mại hợp lệ. Giảm giá: ${discountAmount.toLocaleString()} VNĐ`);
+                $('#apply-promo-btn').text('Hủy mã khuyến mại');
+                promoApplied = true;
+
+                // Cập nhật số tiền giảm giá và tổng tiền sau khi giảm giá
+                updateDiscountAndTotalPrice();
+            }
+
+            function resetPromo() {
+                $('#promo-success').text('');
+                $('#promo-error').text('');
+                $('#promotion_code').val('');
+                discountAmount = 0;
+                $('#apply-promo-btn').text('Áp dụng');
+                promoApplied = false;
+                updateDiscountAndTotalPrice(); // Cập nhật lại tổng tiền sau khi hủy mã
+            }
+
+            function updateDiscountAndTotalPrice() {
+                const totalSeatsPrice = selectedSeatsCount * {{ $price }};
+                const finalPrice = totalSeatsPrice - discountAmount;
+
+                $('#discount-amount').text(`-${discountAmount.toLocaleString()} VNĐ`);
+                $('#total-price').text(`${finalPrice.toLocaleString()} VNĐ`);
+                $('#total-after-discount').text(`${finalPrice.toLocaleString()} VNĐ`);
+            }
+
+            // Form validation and seat selection logic
+            $('input').on('input', validateForm);
+
+            function validateForm() {
+                const name = $('#name').val();
+                const phone = $('#phone').val();
+                const email = $('#email').val();
+                const pickupLocation = $('#pickup-location').val();
+                const dropoffLocation = $('#dropoff-location').val();
+                const isFormValid = name && phone && email && pickupLocation && dropoffLocation &&
+                    selectedSeatsCount > 0;
+
+                if (isFormValid && validatePhone() && validateEmail()) {
+                    $('#submit-button').prop('disabled', false);
+                } else {
+                    $('#submit-button').prop('disabled', true);
+                }
+            }
+
+            function validatePhone() {
+                const phone = $('#phone').val();
+                const phonePattern = /^(0|\+84)[1-9][0-9]{8}$/;
+                if (!phonePattern.test(phone)) {
+                    $('#phone-error').text('Số điện thoại không hợp lệ!');
+                    return false;
+                } else {
+                    $('#phone-error').text('');
+                    return true;
+                }
+            }
+
+            function validateEmail() {
+                const email = $('#email').val();
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(email)) {
+                    $('#email-error').text('Email không hợp lệ!');
+                    return false;
+                } else {
+                    $('#email-error').text('');
+                    return true;
+                }
+            }
+
+            // Call validateForm whenever seats are selected/deselected
+            function toggleSeat(element) {
+                const seatId = element.getAttribute('data-seat-id');
+                const seatCode = element.getAttribute('data-seat-code');
+                let seatStatus = parseInt(element.getAttribute('data-seat-status'));
+
+                if (seatStatus === 0) {
+                    if (selectedSeatsCount >= maxSeats) {
+                        alert(`Bạn chỉ có thể chọn tối đa ${maxSeats} ghế.`);
+                        return;
+                    }
+                    seatStatus = 2;
+                    selectedSeatsCount++;
+                    holdSeat(seatId);
+                } else if (seatStatus === 2) {
+                    seatStatus = 0;
+                    selectedSeatsCount--;
+                    cancelSeat(seatId);
+                }
+
+                updateSeatColor(element, seatStatus);
+                updateSeatSummary(seatId, seatCode, seatStatus === 2 ? 'add' : 'remove');
+                validateForm(); // Update form validation when seat selection changes
+            }
+        });
+    </script>
 
     <script>
+        $(document).ready(function() {
+            // Kiểm tra số điện thoại
+            $('#phone').on('input', function() {
+                const phone = $(this).val();
+                const phonePattern = /^(0|\+84)[1-9][0-9]{8}$/; // Kiểu mẫu cho số điện thoại Việt Nam
+                const errorMessage = $('#phone-error');
+
+                if (!phonePattern.test(phone)) {
+                    errorMessage.text('Số điện thoại không hợp lệ!');
+                } else {
+                    errorMessage.text(''); // Xóa thông báo lỗi
+                }
+            });
+
+            // Kiểm tra email
+            $('#email').on('input', function() {
+                const email = $(this).val();
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Kiểu mẫu cho email
+                const errorMessage = $('#email-error');
+
+                if (!emailPattern.test(email)) {
+                    errorMessage.text('Email không hợp lệ!');
+                } else {
+                    errorMessage.text(''); // Xóa thông báo lỗi
+                }
+            });
+        });
+
+
         const maxSeats = 4; // Số ghế tối đa có thể chọn
         let selectedSeatsCount = 0;
         let stompClient = null;
@@ -235,13 +406,14 @@
                 // Đăng ký nhận cập nhật ghế từ server qua WebSocket
                 stompClient.subscribe('/topic/hold', function(message) {
                     const seatHoldDTO = JSON.parse(message.body);
+                    console.log("Seat: " + seatHoldDTO.holdStart);
                     updateSeatStatus(seatHoldDTO); // Cập nhật trạng thái ghế
                 });
 
-                stompClient.subscribe('/topic/cancel', function(message) {
-                    const seatHoldDTO = JSON.parse(message.body);
-                    updateSeatStatus(seatHoldDTO); // Cập nhật trạng thái ghế
-                });
+                // stompClient1.subscribe('/topic/cancel', function(message) {
+                //     const seatHoldDTO = JSON.parse(message.body);
+                //     updateSeatStatus(seatHoldDTO); // Cập nhật trạng thái ghế
+                // });
             });
 
             const socket1 = new SockJS('http://localhost:8080/cancel'); // WebSocket endpoint
@@ -287,7 +459,7 @@
 
                 // Gửi yêu cầu giữ ghế qua WebSocket
                 holdSeat(seatId);
-              
+
 
             } else if (seatStatus === 2) { // Nếu ghế đang được giữ
                 seatStatus = 0; // Đổi trạng thái thành trống
@@ -296,10 +468,10 @@
                 console.log("Hủy giữ chỗ");
 
                 // Gửi yêu cầu hủy ghế qua WebSocket
-                //cancelSeat(seatId);
+                cancelSeat(seatId);
             }
 
-    
+
             // Cập nhật màu sắc ghế và trạng thái
             updateSeatColor(element, seatStatus);
             updateSeatSummary(seatId, seatCode, seatStatus === 2 ? 'add' : 'remove');
@@ -320,7 +492,8 @@
                     sessionId: sessionId,
                     seatId: parseInt(seatId),
                     tripDetailId: tripDetailId,
-                    departureDate: departureDate
+                    departureDate: departureDate,
+                    status: 2
                 }));
             } catch (error) {
                 console.error('Lỗi khi gửi yêu cầu giữ ghế:', error);
@@ -330,11 +503,12 @@
         // Hàm gửi yêu cầu hủy ghế
         function cancelSeat(seatId) {
             try {
-                stompClient.send('/app/cancel', {}, JSON.stringify({
+                stompClient1.send('/app/cancel', {}, JSON.stringify({
                     sessionId: sessionId,
                     seatId: parseInt(seatId),
                     tripDetailId: tripDetailId,
-                    departureDate: departureDate
+                    departureDate: departureDate,
+                    status: 0
                 }));
             } catch (error) {
                 console.error('Lỗi khi gửi yêu cầu hủy ghế:', error);
@@ -370,8 +544,13 @@
         function updateSeatSummary(seatId, seatCode, action) {
             const seatList = document.getElementById('selected-seats-list');
             const seatSummary = document.getElementById('total-price');
+            const discountAmount = document.getElementById('discount-amount');
+            const totalAfterDiscount = document.getElementById('total-after-discount');
             const hiddenSelectedSeats = document.getElementById('hidden-selectedSeats');
             const hiddenSelectedSeatIds = document.getElementById('hidden-selectedSeatIds');
+
+            let totalPrice = parseInt(seatSummary.textContent.replace(' VNĐ', '')) || 0;
+            const price = {{ $price }};
 
             if (action === 'add') {
                 const listItem = document.createElement('li');
@@ -387,9 +566,9 @@
                 hiddenSelectedSeatIds.value = currentSeatIds.join(',');
 
                 // Cập nhật tổng tiền
-                const price = {{ $price }};
-                const totalPrice = parseInt(seatSummary.textContent.replace(' VNĐ', '')) || 0;
-                seatSummary.textContent = (totalPrice + price) + ' VNĐ';
+                totalPrice += price;
+                seatSummary.textContent = totalPrice + ' VNĐ';
+
             } else if (action === 'remove') {
                 const listItems = seatList.querySelectorAll('li');
                 listItems.forEach(item => {
@@ -405,13 +584,38 @@
                 hiddenSelectedSeatIds.value = currentSeatIds.filter(id => id !== seatId).join(',');
 
                 // Cập nhật tổng tiền
-                const price = {{ $price }};
-                const totalPrice = parseInt(seatSummary.textContent.replace(' VNĐ', '')) || 0;
-                seatSummary.textContent = (totalPrice - price) + ' VNĐ';
+                totalPrice -= price;
+                seatSummary.textContent = totalPrice + ' VNĐ';
             }
+
+            // Cập nhật số tiền giảm giá và tổng tiền sau khi giảm giá
+            const discountValue = parseInt(discountAmount.textContent.replace(' VNĐ', '')) || 0;
+            const totalAfterDiscountValue = totalPrice - discountValue;
+            totalAfterDiscount.textContent = totalAfterDiscountValue + ' VNĐ';
 
             // Kích hoạt nút submit nếu có ghế được chọn
             document.getElementById('submit-button').disabled = selectedSeatsCount === 0;
         }
-    </script>
+
+        // Thêm hàm xử lý mã giảm giá
+    //     function applyDiscount() {
+    //         const promoCodeInput = document.getElementById('promotion_code').value;
+    //         const discountAmountElement = document.getElementById('discount-amount');
+    //         let discountValue = 0;
+
+    //         // Giả sử bạn kiểm tra mã giảm giá ở đây
+    //         if (promoCodeInput === "MAUDEAL") {
+    //             discountValue = 10000; // Ví dụ: giảm giá 10,000 VNĐ
+    //         }
+
+    //         discountAmountElement.textContent = `-${discountValue} VNĐ`;
+    //         const totalPrice = parseInt(document.getElementById('total-price').textContent.replace(' VNĐ', '')) || 0;
+    //         const totalAfterDiscount = totalPrice - discountValue;
+    //         document.getElementById('total-after-discount').textContent = totalAfterDiscount + ' VNĐ';
+    //     }
+    // </script>
+{{-- 
+    <script>
+        document.getElementById('apply-promo-btn').addEventListener('click', applyDiscount);
+    </script> --}}
 @endsection

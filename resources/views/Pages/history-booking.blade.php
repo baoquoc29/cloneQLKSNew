@@ -43,7 +43,7 @@
                         <input type="text" class="form-control" id="ticketCode" name="ticketCode"
                             placeholder="Nhập mã vé">
                     </div>
-                    <button type="submit" class="btn btn-primary mt-3" disabled>Tìm Kiếm</button>
+                    <button type="submit" class="btn btn-primary mt-3" id="searchButton" disabled>Tìm Kiếm</button>
                 </form>
             </div>
 
@@ -72,7 +72,7 @@
                                 @foreach ($bookedTickets as $bookedTicket)
                                     <tr>
                                         <td>{{ $bookedTicket['bookingId'] }}</td>
-                                        <td>{{ $bookedTicket['destination'] }} - {{ $bookedTicket['departure'] }}</td>
+                                        <td>{{ $bookedTicket['departure'] }} - {{ $bookedTicket['destination'] }}</td>
                                         <td>{{ $bookedTicket['startDestination'] }}</td>
                                         <td>{{ $bookedTicket['endDestination'] }}</td>
                                         <td>{{ $bookedTicket['carType'] }}</td>
@@ -108,33 +108,26 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Khi người dùng nhập số điện thoại
-            $('#phone').on('input', function() {
-                var phone = $(this).val();
-                var isValidPhone = validatePhone(phone);
+            // Kiểm tra trạng thái của nút tìm kiếm
+            function checkButtonState() {
+                var isValidPhone = validatePhone($('#phone').val());
+                var isValidEmail = validateEmail($('#email').val());
+                var isFullNameFilled = $('#fullName').val().trim() !== '';
 
-                if (!isValidPhone) {
-                    $('#phone').next('.error').text('Số điện thoại không hợp lệ');
+                if (isValidPhone && isValidEmail && isFullNameFilled) {
+                    $('#searchButton').prop('disabled', false); // Kích hoạt nút tìm kiếm
                 } else {
-                    $('#phone').next('.error').text(''); // Xóa lỗi nếu hợp lệ
+                    $('#searchButton').prop('disabled', true); // Vô hiệu hóa nút tìm kiếm
                 }
-            });
+            }
 
-            // Khi người dùng nhập email
-            $('#email').on('input', function() {
-                var email = $(this).val();
-                var isValidEmail = validateEmail(email);
-
-                if (!isValidEmail) {
-                    $('#email').next('.error').text('Email không hợp lệ');
-                } else {
-                    $('#email').next('.error').text(''); // Xóa lỗi nếu hợp lệ
-                }
+            // Khi người dùng nhập thông tin
+            $('#fullName, #email, #phone').on('input', function() {
+                checkButtonState(); // Kiểm tra trạng thái nút tìm kiếm
             });
 
             // Hàm kiểm tra định dạng số điện thoại Việt Nam
             function validatePhone(phone) {
-                // Regex cho số điện thoại Việt Nam (10 số, bắt đầu bằng 03, 05, 07, 08, 09)
                 var phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
                 return phoneRegex.test(phone);
             }
@@ -144,6 +137,9 @@
                 var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 return emailRegex.test(email);
             }
+
+            // Gọi hàm kiểm tra ngay khi trang được tải
+            checkButtonState();
         });
     </script>
 @endsection

@@ -114,7 +114,7 @@
         </div>
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link" href="#" data-link="dashboard"><i class="fas fa-home"></i> Dashboard</a>
+                <a class="nav-link" href="{{ route('report', ['page' => 1]) }}" data-link="dashboard"><i class="fas fa-home"></i> Dashboard</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('car-type', ['page' => 1]) }}" data-link="car-type"><i class="fas fa-table"></i> Loại xe</a>
