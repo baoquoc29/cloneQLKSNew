@@ -47,6 +47,7 @@ class TripDetailController extends Controller
         $departure = $request->input('departure');
         $destination = $request->input('destination');
         $departureDate = $request->input('departure-date');
+        $carType = null;
 
         //Lay ra danh sach departures va destinations
         $departures = TripController::getAllDeparture();
@@ -66,7 +67,8 @@ class TripDetailController extends Controller
             "departures",
             "destinations",
             "carTypes",
-            "filteredTripDetails"
+            "filteredTripDetails",
+            'carType'
         ));
     }
 
@@ -80,7 +82,9 @@ class TripDetailController extends Controller
         $destination = $request->input('destination');
         $departureDate = $request->input('departure-date');
         $carType = $request->input('car-type');
+        if($carType == 'Tất cả') $carType = 'All';
         $priceRange = $request->input('price-range-input');
+        
 
         // Tách chuỗi thành hai phần
         list($minPrice, $maxPrice) = $this->getPriceRange($priceRange);

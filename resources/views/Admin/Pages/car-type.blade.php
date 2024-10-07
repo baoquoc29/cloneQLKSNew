@@ -88,7 +88,8 @@
                         class="d-flex mb-3">
 
                         <input type="text" class="form-control search-input" id="searchCarTypeName"
-                            name="searchCarTypeName" placeholder="Tìm kiếm tên loại xe..." value = "{{ $search ? $searchCarTypeName : "" }}">
+                            name="searchCarTypeName" placeholder="Tìm kiếm tên loại xe..."
+                            value = "{{ $search ? $searchCarTypeName : '' }}">
                         <button type="submit" class="btn btn-primary ms-2">Tìm kiếm</button>
                     </form>
                 </div>
@@ -267,7 +268,7 @@
 
         @if ($message != null)
             Swal.fire({
-                icon: 'success',
+                icon: '{{ $message === 'Thêm loại xe thành công' || $message === 'Cập nhật loại xe thành công' ? 'success' : 'error' }}',
                 title: 'Thông báo!',
                 text: '{{ $message }}',
                 toast: false,

@@ -1,48 +1,63 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container my-4">
-        <h2 class="mb-4">Xác nhận thông tin đặt vé</h2>
+    <div class="container my-5 position-relative">
+        <!-- Countdown timer -->
+        <div id="countdown" class="position-absolute" style="top: 0; right: 15px;">
+            <p class="mb-0"><strong>Thời gian còn lại:</strong></p>
+            <p id="timer" class="text-danger font-weight-bold mb-0">20:00</p>
+        </div>
 
-        <div class="row mb-4">
+        <h2 class="text-center mb-5 text-primary">Xác nhận thông tin đặt vé</h2>
+
+        <div class="row mb-5">
             <!-- Thông tin chuyến xe -->
-            <div class="col-md-6">
-                <div class="card border-primary">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Thông tin chuyến xe</h5>
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-lg h-100">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h5 class="mb-0"><i class="fas fa-bus mr-2"></i>Thông tin chuyến xe</h5>
                     </div>
                     <div class="card-body">
-                        <p><strong>Điểm đi:</strong> {{ $departure }}</p>
-                        <p><strong>Điểm đến:</strong> {{ $destination }}</p>
-                        <p><strong>Thời gian đi:</strong> {{ $departureTime }}</p>
-                        <p><strong>Thời gian đến:</strong> {{ $destinationTime }}</p>
-                        <p><strong>Tổng tiền:</strong> <span class="text-danger font-weight-bold">{{ $totalPrice }}</span>
+                        <p><i class="fas fa-map-marker-alt text-primary mr-2"></i><strong>Điểm đi:</strong>
+                            {{ $departure }}</p>
+                        <p><i class="fas fa-map-pin text-primary mr-2"></i><strong>Điểm đến:</strong> {{ $destination }}
                         </p>
-                        <p><strong>Ngày đi:</strong> {{ $departureDate }}</p>
-                        <p><strong>Danh sách ghế đã chọn:</strong> {{ $selectedSeats }}</p>
+                        <p><i class="far fa-clock text-primary mr-2"></i><strong>Thời gian đi:</strong> {{ $departureTime }}
+                        </p>
+                        <p><i class="far fa-clock text-primary mr-2"></i><strong>Thời gian đến:</strong>
+                            {{ $destinationTime }}</p>
+                        <p><i class="fas fa-calendar-alt text-primary mr-2"></i><strong>Ngày đi:</strong>
+                            {{ $departureDate }}</p>
+                        <p><i class="fas fa-chair text-primary mr-2"></i><strong>Ghế đã chọn:</strong> {{ $selectedSeats }}
+                        </p>
+                        <p class="h4 mt-3"><i class="fas fa-money-bill-wave text-success mr-2"></i><strong>Tổng
+                                tiền:</strong> <span class="text-success">{{ $totalPrice }}</span></p>
                     </div>
                 </div>
             </div>
 
             <!-- Thông tin liên hệ -->
-            <div class="col-md-6">
-                <div class="card border-success">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="mb-0">Thông tin liên hệ</h5>
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-lg h-100">
+                    <div class="card-header bg-success text-white py-3">
+                        <h5 class="mb-0"><i class="fas fa-user mr-2"></i>Thông tin liên hệ</h5>
                     </div>
                     <div class="card-body">
-                        <p><strong>Tên:</strong> {{ $name }}</p>
-                        <p><strong>Số điện thoại:</strong> {{ $phone }}</p>
-                        <p><strong>Email:</strong> {{ $email }}</p>
-                        <p><strong>Địa điểm đón:</strong> {{ $startDestination }}</p>
-                        <p><strong>Địa điểm trả:</strong> {{ $endDestination }}</p>
+                        <p><i class="fas fa-user-circle text-success mr-2"></i><strong>Tên:</strong> {{ $name }}</p>
+                        <p><i class="fas fa-phone text-success mr-2"></i><strong>Số điện thoại:</strong> {{ $phone }}
+                        </p>
+                        <p><i class="fas fa-envelope text-success mr-2"></i><strong>Email:</strong> {{ $email }}</p>
+                        <p><i class="fas fa-map-marker-alt text-success mr-2"></i><strong>Địa điểm đón:</strong>
+                            {{ $startDestination }}</p>
+                        <p><i class="fas fa-map-pin text-success mr-2"></i><strong>Địa điểm trả:</strong>
+                            {{ $endDestination }}</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Form xác nhận -->
-        <form action="{{ route('booking.payment') }}" method="POST" id="confirmationForm">
+        <form action="{{ route('booking.payment') }}" method="POST" id="confirmationForm" class="mb-5">
             @csrf
             <input type="hidden" name="trip-detail-id" value="{{ $tripDetail['tripDetailId'] }}">
             <input type="hidden" name="departure" value="{{ $departure }}">
@@ -59,40 +74,89 @@
             <input type="hidden" name="pickup_location" value="{{ $startDestination }}">
             <input type="hidden" name="dropoff_location" value="{{ $endDestination }}">
 
-            <div class="form-check mb-4">
-                <input type="checkbox" class="form-check-input" id="terms" required>
-                <label class="form-check-label" for="terms">Tôi chấp nhận điều khoản</label>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100" id="paymentButton" disabled>Thanh toán</button>
+            <button type="submit" class="btn btn-primary btn-lg btn-block" id="paymentButton">
+                <i class="fas fa-check-circle mr-2"></i>Xác nhận thanh toán
+            </button>
         </form>
-
-        <!-- Countdown timer -->
-        <div id="countdown" class="mt-4">
-            <p class="h5">Thời gian còn lại: <span id="timer" class="font-weight-bold">20:00</span></p>
-        </div>
     </div>
 
     <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+        }
+
+        .card {
+            transition: transform 0.3s;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
         .card-header {
             font-size: 1.25rem;
         }
 
-        .form-check-label {
-            font-size: 1rem;
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            padding: 12px 24px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         #timer {
-            color: #dc3545;
-            /* Đỏ nhạt cho đồng hồ đếm ngược */
+            font-size: 1.5rem;
+        }
+
+        #countdown {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .text-primary {
+            color: #007bff !important;
+        }
+
+        .text-success {
+            color: #28a745 !important;
+        }
+
+        .text-danger {
+            color: #dc3545 !important;
+        }
+
+        .bg-primary {
+            background-color: #007bff !important;
+        }
+
+        .bg-success {
+            background-color: #28a745 !important;
+        }
+
+        .shadow-lg {
+            box-shadow: 0 1rem 3rem rgba(0, 0, 0, .175) !important;
         }
     </style>
 
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
     <script>
-        document.getElementById('terms').addEventListener('change', function() {
-            document.getElementById('paymentButton').disabled = !this.checked;
-        });
-
         // Countdown timer
         let timeLeft = 20 * 60; // 20 minutes in seconds
         const countdownTimer = setInterval(function() {

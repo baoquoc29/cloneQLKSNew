@@ -13,8 +13,7 @@
         /* Custom Styles */
         body {
             font-family: 'Public Sans', sans-serif;
-            margin: 0;
-            padding: 0;
+            background-color: #f8f9fa;
         }
 
         .sidebar {
@@ -27,80 +26,72 @@
             width: 250px;
             padding-top: 20px;
             z-index: 1000;
-            transition: margin-left 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
-        .sidebar a {
+        .sidebar .nav-link {
+            color: #ced4da;
+            padding: 10px 20px;
+            transition: all 0.3s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
             color: #fff;
-            text-decoration: none;
-            display: block;
-            padding: 10px 15px;
+            background-color: #495057;
+            border-left: 4px solid #007bff;
         }
 
-        .sidebar a:hover {
-            background-color: #495057;
-        }
-
-        .sidebar .active {
-            background-color: #495057;
-            font-weight: bold;
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
         }
 
         .main-content {
             margin-left: 250px;
             padding: 20px;
-            position: relative;
+            transition: all 0.3s;
         }
 
         .navbar {
             background-color: #fff;
-            color: #343a40;
-            padding: 10px 20px;
-            position: fixed;
-            top: 0;
-            left: 250px;
-            right: 0;
-            width: calc(100% - 250px);
-            z-index: 1020;
-            border-bottom: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
         }
 
         .navbar .nav-link {
             color: #343a40;
-            font-size: 0.9rem;
         }
 
-        .navbar .navbar-nav {
-            margin-top: -10px;
-        }
-
-        .navbar .navbar-toggler {
-            padding: 0.25rem 0.75rem;
-            font-size: 0.85rem;
+        .navbar .nav-link:hover {
+            color: #007bff;
         }
 
         .content-wrapper {
-            margin-top: 60px;
-            margin-left: 20px;
-            margin-right: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
         }
 
         /* Responsive adjustments */
         @media (max-width: 992px) {
             .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                margin-bottom: 20px;
+                margin-left: -250px;
+            }
+
+            .sidebar.active {
+                margin-left: 0;
             }
 
             .main-content {
                 margin-left: 0;
             }
 
-            .navbar {
-                left: 0;
-                width: 100%;
+            .main-content.active {
+                margin-left: 250px;
             }
         }
     </style>
@@ -114,34 +105,37 @@
         </div>
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('report', ['page' => 1]) }}" data-link="dashboard"><i class="fas fa-home"></i> Dashboard</a>
+                <a class="nav-link" href="{{ route('report', ['page' => 1]) }}"><i class="fas fa-home"></i>
+                    Dashboard</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('car-type', ['page' => 1]) }}" data-link="car-type"><i class="fas fa-table"></i> Loại xe</a>
+                <a class="nav-link" href="{{ route('car-type', ['page' => 1]) }}"><i class="fas fa-car"></i> Loại xe</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('car', ['page' => 1]) }}" data-link="car"><i class="fas fa-table"></i> Xe</a>
+                <a class="nav-link" href="{{ route('car', ['page' => 1]) }}"><i class="fas fa-bus"></i> Xe</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('trip', ['page' => 1]) }}" data-link="car-type"><i class="fas fa-table"></i>Chuyến</a>
+                <a class="nav-link" href="{{ route('trip', ['page' => 1]) }}"><i class="fas fa-route"></i> Chuyến</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('trip-detail', ['page' => 1]) }}" data-link="car-type"><i class="fas fa-table"></i>Chi tiết chuyến</a>
+                <a class="nav-link" href="{{ route('trip-detail', ['page' => 1]) }}"><i class="fas fa-info-circle"></i>
+                    Chi tiết chuyến</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('promotion') }}" data-link="car-type"><i class="fas fa-table"></i>Quản lý khuyến mại</a>
+                <a class="nav-link" href="{{ route('promotion') }}"><i class="fas fa-percent"></i> Quản lý khuyến
+                    mại</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('seats') }}" data-link="car-type"><i class="fas fa-table"></i>Sơ đồ chỗ ngồi</a>
+                <a class="nav-link" href="{{ route('seats') }}"><i class="fas fa-chair"></i> Sơ đồ chỗ ngồi</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#" data-link="charts"><i class="fas fa-chart-bar"></i> Charts</a>
+                <a class="nav-link" href="#"><i class="fas fa-chart-bar"></i> Charts</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#" data-link="users"><i class="fas fa-users"></i> Users</a>
+                <a class="nav-link" href="#"><i class="fas fa-users"></i> Users</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#" data-link="settings"><i class="fas fa-cogs"></i> Settings</a>
+                <a class="nav-link" href="#"><i class="fas fa-cogs"></i> Settings</a>
             </li>
         </ul>
     </div>
@@ -151,8 +145,7 @@
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container-fluid">
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" id="sidebarToggle">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
@@ -171,25 +164,31 @@
             </div>
         </nav>
 
-        <!-- Dashboard Content -->
         <!-- Content -->
-        @yield('content')
+        <div class="content-wrapper">
+            @yield('content')
+        </div>
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const sidebarLinks = document.querySelectorAll('.sidebar .nav-link');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
 
             sidebarLinks.forEach(link => {
-                link.addEventListener('click', function () {
-                    // Xóa lớp active khỏi tất cả các nút
+                link.addEventListener('click', function() {
                     sidebarLinks.forEach(link => link.classList.remove('active'));
-
-                    // Thêm lớp active cho nút đang được nhấn
                     this.classList.add('active');
                 });
+            });
+
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                mainContent.classList.toggle('active');
             });
         });
     </script>

@@ -1,4 +1,5 @@
 @extends('layouts.app')
+
 <!-- Link tới Bootstrap CSS -->
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 <!-- Link tới jQuery và Bootstrap JS -->
@@ -8,55 +9,88 @@
 <!-- Link tới Bootstrap Slider CSS và JS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.4/nouislider.min.js"></script>
+<!-- Link tới Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
 <style>
     body {
-        background-color: #f7f9fc;
-        font-family: 'Arial', sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        font-family: 'Roboto', sans-serif;
     }
 
     .container {
-        padding: 30px;
+        padding: 40px 20px;
     }
 
     .form-filter {
         padding: 30px;
-        border-radius: 10px;
+        border-radius: 15px;
         background-color: #ffffff;
-        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         margin-bottom: 30px;
+        transition: all 0.3s ease;
+    }
+
+    .form-filter:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
     }
 
     .form-filter h4 {
-        color: #007bff;
+        color: #4e54c8;
         font-weight: bold;
-        border-bottom: 2px solid #007bff;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
+        border-bottom: 2px solid #4e54c8;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
     }
 
     .filter-item {
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+    }
+
+    .form-control, .btn {
+        border-radius: 10px;
+    }
+
+    .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(78, 84, 200, 0.25);
+        border-color: #4e54c8;
+    }
+
+    .btn-primary {
+        background-color: #4e54c8;
+        border: none;
+        padding: 10px 20px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #3f45b6;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(78, 84, 200, 0.4);
     }
 
     .slider-container {
-        margin-top: 10px;
+        margin-top: 15px;
     }
 
     .trip-info {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 15px;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        margin-bottom: 15px;
+        padding: 20px;
+        border: none;
+        border-radius: 15px;
+        margin-bottom: 20px;
         background-color: #ffffff;
-        transition: box-shadow 0.3s ease;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
     }
 
     .trip-info:hover {
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     }
 
     .trip-info .info-item {
@@ -70,15 +104,19 @@
 
     .btn-select {
         white-space: nowrap;
-        transition: background-color 0.3s, border-color 0.3s;
+        transition: all 0.3s ease;
         background-color: #28a745;
         border: none;
         color: white;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: bold;
     }
 
     .btn-select:hover {
         background-color: #218838;
-        border-color: #1e7e34;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
     }
 
     .slider-input {
@@ -86,12 +124,15 @@
         text-align: center;
         border: none;
         background-color: #e9ecef;
+        border-radius: 10px;
+        padding: 10px;
+        margin-top: 10px;
     }
 
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .form-filter {
-            padding: 15px;
+            padding: 20px;
         }
 
         .trip-info {
@@ -100,7 +141,8 @@
         }
 
         .trip-info .info-item {
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            width: 100%;
         }
     }
 </style>
@@ -110,11 +152,11 @@
         <div class="row">
             <!-- Phần bên trái: Form bộ lọc tìm kiếm -->
             <div class="col-md-4 form-filter">
-                <h4 class="mb-4">Tìm Kiếm Chuyến Xe</h4>
+                <h4 class="mb-4"><i class="fas fa-search mr-2"></i>Tìm Kiếm Chuyến Xe</h4>
                 <form method="POST" action="{{ route('booking.search.advanced') }}">
                     @csrf
                     <div class="filter-item">
-                        <label for="departure">Địa điểm đi</label>
+                        <label for="departure"><i class="fas fa-map-marker-alt mr-2"></i>Địa điểm đi</label>
                         <select class="form-control" id="departure" name="departure">
                             <option value="{{ $departure }}" selected>{{ $departure }}</option>
                             @foreach ($departures as $departure)
@@ -123,7 +165,7 @@
                         </select>
                     </div>
                     <div class="filter-item">
-                        <label for="destination">Địa điểm đến</label>
+                        <label for="destination"><i class="fas fa-map-pin mr-2"></i>Địa điểm đến</label>
                         <select class="form-control" id="destination" name="destination">
                             <option value="{{ $destination }}" selected>{{ $destination }}</option>
                             @foreach ($destinations as $destination)
@@ -132,96 +174,89 @@
                         </select>
                     </div>
                     <div class="filter-item">
-                        <label for="departure-date">Ngày đi</label>
+                        <label for="departure-date"><i class="far fa-calendar-alt mr-2"></i>Ngày đi</label>
                         <input type="date" class="form-control" id="departure-date" name="departure-date"
                             value="{{ $departureDate }}">
                     </div>
                     <div class="filter-item">
-                        <label for="car-type">Loại xe</label>
+                        <label for="car-type"><i class="fas fa-bus mr-2"></i>Loại xe</label>
                         <select class="form-control" id="car-type" name="car-type">
-                            <option value="All">Tất cả</option>
+                            @if ($carType != null)
+                            <option value="{{ $carType }}" selected>{{ $carType == "All" ? "Tất cả" : $carType }}</option>
+                            @endif
+                            <option value="Tất cả">Tất cả</option>
                             @foreach ($carTypes as $carType)
                                 <option value="{{ $carType['name'] }}">{{ $carType['name'] }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="filter-item">
-                        <label for="price-range">Giá tiền</label>
+                        <label for="price-range"><i class="fas fa-dollar-sign mr-2"></i>Giá tiền</label>
                         <div id="price-range" name="price-range" class="slider-container"></div>
                         <input type="text" class="form-control mt-2 slider-input" id="price-range-input"
                             name="price-range-input" readonly>
                         <input type="hidden" id="price-min" name="price-min">
                         <input type="hidden" id="price-max" name="price-max">
                     </div>
-                    <button type="submit" class="btn btn-primary mt-3">Tìm Kiếm</button>
+                    <button type="submit" class="btn btn-primary mt-3 btn-block"><i class="fas fa-search mr-2"></i>Tìm Kiếm</button>
                 </form>
             </div>
 
             <!-- Phần bên phải: Kết quả tìm kiếm -->
             <div class="col-md-8">
-                <h4 class="mb-4 text-primary">Kết quả tìm kiếm</h4>
+                <h4 class="mb-4 text-primary"><i class="fas fa-list mr-2"></i>Kết quả tìm kiếm</h4>
                 @if ($filteredTripDetails && count($filteredTripDetails) > 0)
                     <h5>Tổng số chuyến: {{ count($filteredTripDetails) }}</h5>
                     @foreach ($filteredTripDetails as $filteredTripDetail)
                         <div class="trip-info">
                             <div class="info-item">
                                 @php
-                                    $percentageAvailableSeats =
-                                        ($filteredTripDetail['availableSeats'] /
-                                            $filteredTripDetail['tripDetail']['car']['numberOfSeats']) *
-                                        100;
-
+                                    $percentageAvailableSeats = ($filteredTripDetail['availableSeats'] / $filteredTripDetail['tripDetail']['car']['numberOfSeats']) * 100;
                                     $departureTime = $filteredTripDetail['tripDetail']['departureTime'];
                                     $destinationTime = $filteredTripDetail['tripDetail']['destinationTime'];
-
                                     $departureDateTime = new DateTime($departureTime);
                                     $destinationDateTime = new DateTime($destinationTime);
                                     if ($destinationDateTime < $departureDateTime) {
                                         $destinationDateTime->modify('+1 day');
                                     }
-
                                     $interval = $departureDateTime->diff($destinationDateTime);
-
                                     $formattedDepartureTime = $departureDateTime->format('H:i');
                                     $formattedDestinationTime = $destinationDateTime->format('H:i');
-
                                     $hours = $interval->h;
                                     $minutes = $interval->i;
-
-                                    $formattedDuration =
-                                        $minutes > 0 ? $hours . ' giờ ' . $minutes . ' phút' : $hours . ' giờ';
+                                    $formattedDuration = $minutes > 0 ? $hours . ' giờ ' . $minutes . ' phút' : $hours . ' giờ';
                                 @endphp
-                                <strong
-                                    style="color: blue; font-weight: bold;">{{ substr($filteredTripDetail['tripDetail']['departureTime'], 0, 5) . ' - ' . substr($filteredTripDetail['tripDetail']['destinationTime'], 0, 5) }}</strong><br>
-                                <small style="color: gray; font-weight: bold;">(Thời gian chạy:
-                                    {{ $formattedDuration }})</small>
+                                <strong style="color: #4e54c8; font-weight: bold;">
+                                    <i class="far fa-clock mr-2"></i>{{ substr($filteredTripDetail['tripDetail']['departureTime'], 0, 5) . ' - ' . substr($filteredTripDetail['tripDetail']['destinationTime'], 0, 5) }}
+                                </strong><br>
+                                <small style="color: #6c757d; font-weight: bold;">
+                                    <i class="fas fa-hourglass-half mr-2"></i>{{ $formattedDuration }}
+                                </small>
                             </div>
                             <div class="info-item" style="font-weight: bold;">
-                                {{ $filteredTripDetail['tripDetail']['trip']['departure'] . ' - ' . $filteredTripDetail['tripDetail']['trip']['destination'] }}
+                                <i class="fas fa-route mr-2"></i>{{ $filteredTripDetail['tripDetail']['trip']['departure'] . ' - ' . $filteredTripDetail['tripDetail']['trip']['destination'] }}
                             </div>
-                            <div class="info-item"
-                                style="color: {{ $percentageAvailableSeats >= 50 ? 'green' : ($percentageAvailableSeats >= 20 ? 'yellow' : 'red') }}; font-weight: bold;">
-                                {{ $filteredTripDetail['availableSeats'] . '/' . $filteredTripDetail['tripDetail']['car']['numberOfSeats'] }}
-                                chỗ trống<br>
-                                <small
-                                    style="color: gray; font-weight: bold;">{{ $filteredTripDetail['tripDetail']['car']['carType']['name'] }}</small>
+                            <div class="info-item" style="color: {{ $percentageAvailableSeats >= 50 ? '#28a745' : ($percentageAvailableSeats >= 20 ? '#ffc107' : '#dc3545') }}; font-weight: bold;">
+                                <i class="fas fa-users mr-2"></i>{{ $filteredTripDetail['availableSeats'] . '/' . $filteredTripDetail['tripDetail']['car']['numberOfSeats'] }} chỗ trống<br>
+                                <small style="color: #6c757d; font-weight: bold;">
+                                    <i class="fas fa-bus mr-2"></i>{{ $filteredTripDetail['tripDetail']['car']['carType']['name'] }}
+                                </small>
                             </div>
-                            <div class="info-item" style="color: red; font-weight: bold;">
-                                {{ number_format($filteredTripDetail['tripDetail']['price'], 0, ',', '.') }} VNĐ
+                            <div class="info-item" style="color: #dc3545; font-weight: bold;">
+                                <i class="fas fa-tag mr-2"></i>{{ number_format($filteredTripDetail['tripDetail']['price'], 0, ',', '.') }} VNĐ
                             </div>
                             <div class="info-item">
                                 <a href="{{ route('booking.process', ['tripDetailId' => $filteredTripDetail['tripDetail']['tripDetailId'], 'departureDate' => $departureDate]) }}"
-                                    class="btn btn-success btn-select">Đặt chỗ</a>
+                                    class="btn btn-success btn-select"><i class="fas fa-ticket-alt mr-2"></i>Đặt chỗ</a>
                             </div>
                         </div>
                     @endforeach
                 @else
-                    <p>Không có chuyến nào</p>
+                    <p class="alert alert-info"><i class="fas fa-info-circle mr-2"></i>Không có chuyến nào</p>
                 @endif
             </div>
         </div>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             function removeDuplicatesFromBottom(id) {
@@ -241,6 +276,7 @@
 
             removeDuplicatesFromBottom('departure');
             removeDuplicatesFromBottom('destination');
+            removeDuplicatesFromBottom('car-type');
 
             var today = new Date().toISOString().split('T')[0];
             var departureDate = document.getElementById('departure-date');

@@ -25,121 +25,100 @@
 
         .content-wrapper {
             padding: 20px;
-            background-color: #e9ecef;
+            background-color: #f8f9fa;
         }
 
         .panel {
             background-color: #ffffff;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             padding: 20px;
         }
 
         .panel-header {
             margin-bottom: 20px;
             border-bottom: 1px solid #dee2e6;
-            padding-bottom: 10px;
+            padding-bottom: 15px;
         }
 
-        .panel-body {
-            /* Có thể thêm các thuộc tính khác nếu cần */
+        .table th {
+            background-color: #f8f9fa;
         }
 
-        .swal2-horizontal-popup {
-            width: auto;
-            /* Đặt chiều rộng tự động để phù hợp với nội dung */
-            max-width: 200px;
-            /* Chiều rộng tối đa nhỏ hơn */
-            padding: 5px 10px;
-            /* Khoảng cách bên trong nhỏ hơn */
-            font-size: 0.75rem;
-            /* Kích thước chữ nhỏ hơn */
-            text-align: center;
-            /* Canh giữa nội dung */
-            border-radius: 8px;
-            /* Bo tròn góc */
-        }
-
-        .swal2-popup {
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            /* Đổ bóng nhẹ */
+        .badge {
+            font-size: 0.85em;
+            padding: 0.35em 0.65em;
         }
     </style>
 
     <!-- Content -->
-    <div class="container mt-4 content-wrapper">
+    <div class="container-fluid content-wrapper">
         <div class="panel">
             <div class="panel-header">
-                <div class="d-flex justify-content-between mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Quản Lý Khuyến Mãi</h4>
                     <div>
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addPromotionModal">
-                            <i class="fas fa-plus"></i> Thêm Mới
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPromotionModal">
+                            <i class="fas fa-plus me-2"></i>Thêm Mới
                         </button>
                     </div>
-
-                    <div>
-                        <a href="#" class="btn btn-primary btn-export"><i class="fas fa-file-excel"></i> Excel</a>
-                        <a href="#" class="btn btn-danger btn-export"><i class="fas fa-file-pdf"></i> PDF</a>
-                        <a href="#" class="btn btn-info btn-export"><i class="fas fa-print"></i> Print</a>
-                    </div>
                 </div>
-                <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center">
                     <form id="searchPromotionForm" action="#" method="GET" class="d-flex mb-3">
-                        <input type="text" class="form-control search-input" id="searchPromotionDescription"
-                            name="searchPromotionDescription" placeholder="Tìm kiếm khuyến mại...">
-                        <button type="submit" class="btn btn-primary ms-2">Tìm kiếm</button>
+                        <input type="text" class="form-control search-input me-2" id="searchPromotionDescription"
+                            name="searchPromotionDescription" placeholder="Tìm kiếm khuyến mãi...">
+                        <button type="submit" class="btn btn-outline-primary">Tìm kiếm</button>
                     </form>
+                    <div>
+                        <a href="#" class="btn btn-success btn-export"><i class="fas fa-file-excel me-2"></i>Excel</a>
+                        <a href="#" class="btn btn-danger btn-export"><i class="fas fa-file-pdf me-2"></i>PDF</a>
+                        <a href="#" class="btn btn-info btn-export"><i class="fas fa-print me-2"></i>In</a>
+                    </div>
                 </div>
             </div>
             <div class="panel-body">
-                <div class="card">
-                    <div class="card-header">
-                        <h4>Danh Sách Khuyến Mại</h4>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-striped">
-                            <thead>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã Khuyến Mãi</th>
+                                <th>Mô Tả</th>
+                                <th>Phần Trăm Giảm Giá</th>
+                                <th>Ngày Bắt Đầu</th>
+                                <th>Ngày Kết Thúc</th>
+                                <th>Hành Động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($promotions as $index => $promotion)
                                 <tr>
-                                    <th>No</th>
-                                    <th>Mã Khuyến Mại</th>
-                                    <th>Mô Tả</th>
-                                    <th>Phần Trăm Giảm Giá</th>
-                                    <th>Ngày Bắt Đầu Áp Dụng</th>
-                                    <th>Ngày Hết Hạn</th>
-                                    <th>Hành Động</th>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $promotion['code'] }}</td>
+                                    <td>{{ $promotion['description'] }}</td>
+                                    <td><span class="badge bg-success">{{ $promotion['discountPercentage'] }}%</span></td>
+                                    <td>{{ $promotion['startDate'] }}</td>
+                                    <td>{{ $promotion['endDate'] }}</td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-info action-icons" title="Xem"><i
+                                                class="fas fa-eye"></i></a>
+                                        <a href="#" class="btn btn-sm btn-warning action-icons" data-bs-toggle="modal"
+                                            data-bs-target="#updatePromotionModal" data-code="{{ $promotion['code'] }}"
+                                            data-description="{{ $promotion['description'] }}"
+                                            data-discount="{{ $promotion['discountPercentage'] }}"
+                                            data-start-date="{{ $promotion['startDate'] }}"
+                                            data-end-date="{{ $promotion['endDate'] }}" title="Sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-danger action-icons" title="Xóa"
+                                            onclick="confirmDelete('{{ route('promotion.delete', ['id' => $promotion['id']]) }}')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $numberOrder = 1;
-                                @endphp
-                                @foreach ($promotions as $promotion)
-                                    <tr>
-                                        <td>{{ $numberOrder++ }}</td>
-                                        <td>{{ $promotion['code'] }}</td>
-                                        <td>{{ $promotion['description'] }}</td>
-                                        <td>{{ $promotion['discountPercentage'] }}</td>
-                                        <td>{{ $promotion['startDate'] }}</td>
-                                        <td>{{ $promotion['endDate'] }}</td>
-                                        <td>
-                                            <a href="#" class="btn btn-info btn-sm action-icons" title="Xem"><i
-                                                    class="fas fa-eye"></i></a>
-                                            <a href="#" class="btn btn-warning btn-sm action-icons"
-                                                data-bs-toggle="modal" data-bs-target="#updatePromotionModal"
-                                                data-code="{{ $promotion['code'] }}"
-                                                data-description="{{ $promotion['description'] }}"
-                                                data-discount="{{ $promotion['discountPercentage'] }}"
-                                                data-start-date="{{ $promotion['startDate'] }}"
-                                                data-end-date="{{ $promotion['endDate'] }}" title="Sửa"><i
-                                                    class="fas fa-edit"></i></a>
-                                            <a href="#" class="btn btn-danger btn-sm action-icons" title="Xóa"
-                                                onclick="confirmDelete('{{ route('promotion.delete', ['id' => $promotion['id'] ]) }}')"><i class="fas fa-trash-alt"></i></a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -151,14 +130,14 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addPromotionModalLabel">Thêm Khuyến Mại Mới</h5>
+                    <h5 class="modal-title" id="addPromotionModalLabel">Thêm Khuyến Mãi Mới</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="addPromotionForm" action="{{ route('promotion.create') }}" method="POST">
                         @csrf
                         <div class="mb-3">
-                            <label for="promotionCode" class="form-label">Mã Khuyến Mại</label>
+                            <label for="promotionCode" class="form-label">Mã Khuyến Mãi</label>
                             <input type="text" class="form-control" id="promotionCode" name="promotionCode" required>
                         </div>
                         <div class="mb-3">
@@ -168,21 +147,21 @@
                         </div>
                         <div class="mb-3">
                             <label for="promotionDiscount" class="form-label">Phần Trăm Giảm Giá</label>
-                            <input type="text" class="form-control" id="promotionDiscount" name="promotionDiscount"
+                            <input type="number" class="form-control" id="promotionDiscount" name="promotionDiscount"
                                 required>
                         </div>
                         <div class="mb-3">
-                            <label for="promotionStartDate" class="form-label">Ngày Bắt Đầu Áp Dụng</label>
+                            <label for="promotionStartDate" class="form-label">Ngày Bắt Đầu</label>
                             <input type="date" class="form-control" id="promotionStartDate" name="promotionStartDate"
                                 required>
                         </div>
                         <div class="mb-3">
-                            <label for="promotionEndDate" class="form-label">Ngày Hết Hạn</label>
+                            <label for="promotionEndDate" class="form-label">Ngày Kết Thúc</label>
                             <input type="date" class="form-control" id="promotionEndDate" name="promotionEndDate"
                                 required>
                         </div>
                         <div class="modal-footer">
-                            <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                             <button type="submit" class="btn btn-primary">Thêm</button>
                         </div>
                     </form>
@@ -197,7 +176,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="updatePromotionModalLabel">Cập Nhật Khuyến Mại</h5>
+                    <h5 class="modal-title" id="updatePromotionModalLabel">Cập Nhật Khuyến Mãi</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -212,21 +191,21 @@
                         </div>
                         <div class="mb-3">
                             <label for="updatePromotionDiscount" class="form-label">Phần Trăm Giảm Giá</label>
-                            <input type="text" class="form-control" id="updatePromotionDiscount"
+                            <input type="number" class="form-control" id="updatePromotionDiscount"
                                 name="promotionDiscount" required>
                         </div>
                         <div class="mb-3">
-                            <label for="updatePromotionStartDate" class="form-label">Ngày Bắt Đầu Áp Dụng</label>
+                            <label for="updatePromotionStartDate" class="form-label">Ngày Bắt Đầu</label>
                             <input type="date" class="form-control" id="updatePromotionStartDate"
                                 name="promotionStartDate" required>
                         </div>
                         <div class="mb-3">
-                            <label for="updatePromotionEndDate" class="form-label">Ngày Hết Hạn</label>
+                            <label for="updatePromotionEndDate" class="form-label">Ngày Kết Thúc</label>
                             <input type="date" class="form-control" id="updatePromotionEndDate"
                                 name="promotionEndDate" required>
                         </div>
                         <div class="modal-footer">
-                            <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                             <button type="submit" class="btn btn-primary">Cập Nhật</button>
                         </div>
                     </form>
@@ -259,16 +238,24 @@
                 promotionDiscountInput.value = discount;
                 promotionStartDateInput.value = startDate;
                 promotionEndDateInput.value = endDate;
-
-                //Update form action dynamically
-                var formAction = document.getElementById('updatePromotionForm').action;
             });
         });
 
         function confirmDelete(url) {
-            if (confirm('Bạn có chắc chắn muốn xóa khuyến mại này không?')) {
-                window.location.href = url;
-            }
+            Swal.fire({
+                title: 'Bạn có chắc chắn muốn xóa?',
+                text: "Bạn không thể hoàn tác hành động này!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Đồng ý',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            })
         }
     </script>
 @endsection

@@ -58,41 +58,33 @@ class CarTypeController extends Controller
     {
         $name = $request->input('carTypeName');
         $carTypeRequest = ["name" => $name];
-        // Gọi phương thức postData để gửi yêu cầu thêm loại xe
         $apiResponse = ApiController::postData(ApiEndpoints::API_CAR_TYPE_ADD, $carTypeRequest);
 
-        // Kiểm tra xem $apiResponse có phải là một đối tượng JsonResponse không
         if ($apiResponse instanceof \Illuminate\Http\JsonResponse) {
-            $responseData = $apiResponse->getData(true); // Chuyển đổi JsonResponse thành mảng
+            $responseData = $apiResponse->getData(true);
 
-            // Xử lý phản hồi từ API
             if (isset($responseData['success']) && $responseData['success'] == true && $responseData['code'] == 200) {
-                // Nếu thành công, lưu thông báo thành công vào session và điều hướng đến trang mới
                 $message = "Thêm loại xe thành công";
-                session()->put('message', $message);
-
-                // Cập nhật các giá trị phân trang từ session
-                $totalPages = session()->get('totalPages', 1);
-                $totalElements = session()->get('totalElements', 0);
-                $pageSize = session()->get('pageSize', 5);
-
-                // Tính số trang mới sau khi thêm loại xe
-                $totalPages = ($totalElements % $pageSize == 0) ? $totalPages + 1 : $totalPages;
-
-                // Điều hướng đến trang mới
-                return redirect()->route('car-type', ['page' => $totalPages]);
+                $success = true;
             } else {
-                // Nếu không thành công, lưu thông báo lỗi vào session và trả về phản hồi lỗi
-                $message = $responseData['message'] ?? 'Có lỗi xảy ra khi thêm loại xe';
-                session()->put('message', $message);
-
-                // Trả về phản hồi lỗi (có thể điều chỉnh tùy theo yêu cầu)
-                return redirect()->back()->with('error', $message);
+                $message = 'Loại xe đã tồn tại';
+                $success = false;
             }
         } else {
-            // Nếu không phải JsonResponse, xử lý trường hợp lỗi hoặc thông báo không chính xác
             $message = 'Có lỗi xảy ra khi thêm loại xe';
-            session()->put('message', $message);
+            $success = false;
+        }
+
+        session()->put('message', $message);
+        session()->put('success', $success);
+
+        if ($success) {
+            $totalPages = session()->get('totalPages', 1);
+            $totalElements = session()->get('totalElements', 0);
+            $pageSize = session()->get('pageSize', 5);
+            $totalPages = ($totalElements % $pageSize == 0) ? $totalPages + 1 : $totalPages;
+            return redirect()->route('car-type', ['page' => $totalPages]);
+        } else {
             return redirect()->back()->with('error', $message);
         }
     }
@@ -121,12 +113,12 @@ class CarTypeController extends Controller
                 // Cập nhật các giá trị phân trang từ session
                 $currentPage = session()->get('currentPage', 1);
                 $totalPages = session()->get('totalPages', 1);
-         
+
                 // Điều hướng đến trang hiện tại
                 return redirect()->route('car-type', ['page' => $currentPage]);
             } else {
                 // Nếu không thành công, lưu thông báo lỗi vào session và trả về phản hồi lỗi
-                $message = $responseData['message'] ?? 'Có lỗi xảy ra khi cập nhật loại xe';
+                $message = $responseData['message'] ?? 'Loại xe đã tồn tại';
                 session()->put('message', $message);
 
                 // Trả về phản hồi lỗi (có thể điều chỉnh tùy theo yêu cầu)
