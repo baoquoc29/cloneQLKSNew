@@ -77,11 +77,11 @@
                         </button>
                     </div>
 
-                    <div>
+                    {{-- <div>
                         <a href="#" class="btn btn-primary btn-export"><i class="fas fa-file-excel"></i> Excel</a>
                         <a href="#" class="btn btn-danger btn-export"><i class="fas fa-file-pdf"></i> PDF</a>
                         <a href="#" class="btn btn-info btn-export"><i class="fas fa-print"></i> Print</a>
-                    </div>
+                    </div> --}}
                 </div>
                 <div class="mb-3">
                     <form id="searchCarTypeForm" action="{{ route('car-type.search', ['page' => 1]) }}" method="GET"
@@ -198,6 +198,7 @@
                         <div class="mb-3">
                             <label for="carTypeName" class="form-label">Tên Loại Xe</label>
                             <input type="text" class="form-control" id="carTypeName" name="carTypeName" required>
+                            <div id="carTypeNameError" class="invalid-feedback"></div>
                         </div>
                         <div class="modal-footer">
                             <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
@@ -228,6 +229,7 @@
                             <label for="updateCarTypeName" class="form-label">Tên Loại Xe</label>
                             <input type="text" class="form-control" id="updateCarTypeName" name="carTypeName"
                                 required>
+                            <div id="updateCarTypeNameError" class="invalid-feedback"></div>
                         </div>
                         <div class="modal-footer">
                             <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
@@ -240,7 +242,56 @@
     </div>
 
     <script>
+        function isValidCarTypeName(name) {
+            // Chỉ cho phép chữ cái, số, dấu cách và dấu gạch ngang
+            return /^[a-zA-Z0-9\s-]+$/.test(name);
+        }
+
+        function validateCarTypeInput(inputElement, errorElement) {
+            inputElement.addEventListener('input', function() {
+                if (!isValidCarTypeName(this.value)) {
+                    errorElement.textContent = 'Tên loại xe không được chứa ký tự đặc biệt';
+                    this.classList.add('is-invalid');
+                } else {
+                    errorElement.textContent = '';
+                    this.classList.remove('is-invalid');
+                }
+            });
+
+            inputElement.addEventListener('keypress', function(e) {
+                if (!isValidCarTypeName(e.key)) {
+                    e.preventDefault();
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Xử lý form thêm mới
+            const addCarTypeNameInput = document.getElementById('carTypeName');
+            const addCarTypeNameError = document.getElementById('carTypeNameError');
+            validateCarTypeInput(addCarTypeNameInput, addCarTypeNameError);
+
+            // Xử lý form cập nhật
+            const updateCarTypeNameInput = document.getElementById('updateCarTypeName');
+            const updateCarTypeNameError = document.getElementById('updateCarTypeNameError');
+            validateCarTypeInput(updateCarTypeNameInput, updateCarTypeNameError);
+
+            // Thêm xử lý submit form
+            document.getElementById('addCarTypeForm').addEventListener('submit', function(e) {
+                if (!isValidCarTypeName(addCarTypeNameInput.value)) {
+                    e.preventDefault();
+                    addCarTypeNameError.textContent = 'Tên loại xe không hợp lệ';
+                }
+            });
+
+            document.getElementById('updateCarTypeForm').addEventListener('submit', function(e) {
+                if (!isValidCarTypeName(updateCarTypeNameInput.value)) {
+                    e.preventDefault();
+                    updateCarTypeNameError.textContent = 'Tên loại xe không hợp lệ';
+                }
+            });
+
+            // Giữ lại code xử lý modal hiện có
             var updateCarTypeModal = document.getElementById('updateCarTypeModal');
             updateCarTypeModal.addEventListener('show.bs.modal', function(event) {
                 var button = event.relatedTarget;

@@ -29,6 +29,7 @@ class ApiEndpoints
 
     public const API_SEAT_MAP_GET = self::BASE_URL . 'seat-availability/';
     public const API_BOOKING_SEAT_POST = self::BASE_URL . 'booking-seat';
+    public const API_BOOKING_SEAT_PROMOTION_POST = self::BASE_URL . 'booking-seat/';
 
     // Car Type
     public const API_CAR_TYPE_LIST = self::BASE_URL . 'car-type';

@@ -69,6 +69,54 @@
     <div class="container mt-4 content-wrapper">
         <div class="panel">
             <div class="panel-header">
+                <!-- Form tìm kiếm nâng cao -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Tìm Kiếm Nâng Cao</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="searchForm" action="{{ route('trip.search', ['page' => 1]) }}" method="GET">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <div class="form-group">
+                                        <label for="departure">Điểm khởi hành</label>
+                                        <select class="form-control" id="departure" name="departure">
+                                            <option value="All" @if ($departure == 'All') selected @endif>Tất cả
+                                            </option>
+                                            @foreach ($departures as $dep)
+                                                <option value="{{ $dep['departure'] }}"
+                                                    @if ($departure == $dep['departure']) selected @endif>
+                                                    {{ $dep['departure'] }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="form-group">
+                                        <label for="destination">Điểm đến</label>
+                                        <select class="form-control" id="destination" name="destination">
+                                            <option value="All" @if ($destination == 'All') selected @endif>Tất cả
+                                            </option>
+                                            @foreach ($destinations as $des)
+                                                <option value="{{ $des['destination'] }}"
+                                                    @if ($destination == $des['destination']) selected @endif>
+                                                    {{ $des['destination'] }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-search"></i> Tìm kiếm
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="d-flex justify-content-between mb-3">
                     <div>
                         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTripModal">
@@ -76,15 +124,15 @@
                         </button>
                     </div>
 
-                    <div>
+                    {{-- <div>
                         <a href="#" class="btn btn-primary btn-export"><i class="fas fa-file-excel"></i> Excel</a>
                         <a href="#" class="btn btn-danger btn-export"><i class="fas fa-file-pdf"></i> PDF</a>
                         <a href="#" class="btn btn-info btn-export"><i class="fas fa-print"></i> Print</a>
-                    </div>
+                    </div> --}}
                 </div>
-                <div class="mb-3">
+                {{-- <div class="mb-3">
                     <input type="text" class="form-control search-input" placeholder="Tìm kiếm chuyến đi...">
-                </div>
+                </div> --}}
             </div>
             <div class="panel-body">
                 <div class="card">
@@ -139,7 +187,14 @@
                             <ul class="pagination">
                                 @if ($currentPage > 1)
                                     <li class="page-item">
-                                        <a class="page-link" href="{{ route('trip', ['page' => $currentPage - 1]) }}"
+                                        <a class="page-link"
+                                            href="{{ $search == false
+                                                ? route('trip', ['page' => $currentPage - 1])
+                                                : route('trip.search', [
+                                                    'page' => $currentPage - 1,
+                                                    'departure' => $departure,
+                                                    'destination' => $destination,
+                                                ]) }}"
                                             aria-label="Previous">
                                             <span aria-hidden="true">&laquo;</span>
                                         </a>
@@ -149,13 +204,26 @@
                                 @for ($i = 1; $i <= $totalPages; $i++)
                                     <li class="page-item {{ $i == $currentPage ? 'active' : '' }}">
                                         <a class="page-link"
-                                            href="{{ route('trip', ['page' => $i]) }}">{{ $i }}</a>
+                                            href="{{ $search == false
+                                                ? route('trip', ['page' => $i])
+                                                : route('trip.search', [
+                                                    'page' => $i,
+                                                    'departure' => $departure,
+                                                    'destination' => $destination,
+                                                ]) }}">{{ $i }}</a>
                                     </li>
                                 @endfor
 
                                 @if ($currentPage < $totalPages)
                                     <li class="page-item">
-                                        <a class="page-link" href="{{ route('trip', ['page' => $currentPage + 1]) }}"
+                                        <a class="page-link"
+                                            href="{{ $search == false
+                                                ? route('trip', ['page' => $currentPage + 1])
+                                                : route('trip.search', [
+                                                    'page' => $currentPage + 1,
+                                                    'departure' => $departure,
+                                                    'destination' => $destination,
+                                                ]) }}"
                                             aria-label="Next">
                                             <span aria-hidden="true">&raquo;</span>
                                         </a>
@@ -186,7 +254,8 @@
                         </div>
                         <div class="mb-3">
                             <label for="tripDestination" class="form-label">Điểm đến</label>
-                            <input type="text" class="form-control" id="tripDestination" name="tripDestination" required>
+                            <input type="text" class="form-control" id="tripDestination" name="tripDestination"
+                                required>
                         </div>
                         <div class="modal-footer">
                             <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
@@ -208,7 +277,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="updateTripForm" action="{{ route('trip.update', ['tripId' => $trip['tripId']]) }}"
+                    <form id="updateTripForm" action="{{ route('trip.update', ['tripId' => 0]) }}"
                         method="POST">
                         @csrf
                         @method('PUT')

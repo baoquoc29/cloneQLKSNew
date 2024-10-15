@@ -31,7 +31,7 @@
                             <div class="form-group">
                                 <label for="ticketCode">Mã vé (không bắt buộc)</label>
                                 <input type="text" class="form-control" id="ticketCode" name="ticketCode"
-                                    placeholder="Nhập mã vé">
+                                    placeholder="Nhập mã vé" value="{{ $bookingId ?? "" }}">
                             </div>
                             <button type="submit" class="btn btn-primary btn-block mt-4" id="searchButton" disabled>Tìm
                                 Kiếm</button>
@@ -73,7 +73,7 @@
                                                 </td>
                                                 <td>{{ $bookedTicket['departureTime'] }} -
                                                     {{ $bookedTicket['destinationTime'] }}</td>
-                                                <td class="text-center">{{ count($bookedTicket['bookedSeats']) }}</td>
+                                                <td class="text-center">{{ $bookedTicket['numberSeats'] }}</td>
                                                 <td>{{ number_format($bookedTicket['totalPrice'], 0, ',', '.') }} VNĐ</td>
                                                 <td class="text-center">
                                                     @php

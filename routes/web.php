@@ -84,6 +84,9 @@ Route::get('/admin/car-type/delete/{carTypeId}',
 Route::get('/admin/car/page={page}',
 [CarController::class, 'carManagement'])->name('car');
 
+Route::get('/admin/car/search/page={page}',
+[CarController::class, 'search'])->name('car.search');
+
 Route::post('/admin/car/create',
 [CarController::class, 'addCar'])->name('car.create');
 
@@ -106,9 +109,16 @@ Route::put('/admin/trip/update/{tripId}',
 Route::get('/admin/trip/delete/{tripId}',
 [TripController::class, 'deleteTrip'])->name('trip.delete')->where('tripId', '[0-9]+');
 
+
+Route::get('/admin/trip/search/page={page}',
+[TripController::class, 'search'])->name('trip.search');
+
 // Trip Detail
 Route::get('/admin/trip-detail/page={page}',
 [TripDetailController::class, 'tripDetailManagement'])->name('trip-detail');
+
+Route::get('/admin/trip-detail/search/page={page}',
+[TripDetailController::class, 'search'])->name('trip-detail.search');
 
 Route::post('/admin/trip-detail/create',
 [TripDetailController::class, 'addTripDetail'])->name('trip-detail.create');
@@ -144,9 +154,14 @@ Route::post('/admin/promotion/create', [PromotionController::class, 'addPromotio
 Route::put('/admin/promotion/update', [PromotionController::class, 'updatePromotion'])->name('promotion.update');
 Route::get('/admin/promotion/update/{id}',  [PromotionController::class, 'deletePromotion'])->name('promotion.delete');
 Route::post('/admin/promotion/apply', [PromotionController::class, 'apply'])->name('apply.promo');
+Route::get('/admin/promotion/search', [PromotionController::class, 'search'])->name('promotion.search');
 
 
 //Report
 Route::get('/admin/report/page={page}', [ReportController::class, 'reportManagement'])->name('report');
 Route::get('/admin/report/search/page={page}', [ReportController::class, 'search'])->name('report.search');
 Route::post('/admin/report/report-excel', [ReportController::class, 'reportExcel'])->name('report.excel');
+
+Route::get('/car', function () {
+    return view('Admin.Pages.demo');
+});

@@ -13,6 +13,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class TripController extends Controller
 {
     private const PAGE_SIZE = 5;
+    private $search = false;
 
     public function home()
     {
@@ -48,7 +49,7 @@ class TripController extends Controller
         return $destinations;
     }
 
-    public static function tripManagement($page = 1)
+    public function tripManagement($page = 1)
     {
         $response = Http::get("http://localhost:8080/api/trip/page", [
             'pageSize' => self::PAGE_SIZE,
@@ -73,12 +74,22 @@ class TripController extends Controller
         $message = session()->get('message');
         session()->forget('message');
 
+        $departures = TripController::getAllDeparture();
+        $destinations = TripController::getAllDestination();
+        $departure = $destination = 'All';
+
+        $search = false;
         return view('Admin.Pages.trip', [
             'trips' => $trips,
             'totalPages' => $totalPages,
             'currentPage' => $page,
             'pageSize' => self::PAGE_SIZE,
-            'message' => $message
+            'message' => $message,
+            'search' => $search,
+            'departures' => $departures,
+            'destinations' => $destinations,
+            'destination' => $destination,
+            'departure' => $departure
         ]);
     }
 
@@ -192,5 +203,72 @@ class TripController extends Controller
         $currentPage = ($totalElements % $pageSize == 1 && $currentPage == $totalPages) ? $currentPage - 1 : $currentPage;
 
         return redirect()->route('trip', ['page' => $currentPage]);
+    }
+
+    public function search(Request $request, $page = 1)
+    {
+        // Lấy giá trị từ request
+        $departure = $request->input('departure');
+        $destination = $request->input('destination');
+
+        // Nếu cả departure và destination đều không khác "All", redirect về trang đầu tiên
+        if ($departure == 'All' && $destination == 'All') {
+            return redirect()->route('trip', ['page' => 1]);
+        }
+
+        // Tạo đường dẫn API dựa trên các tham số
+        $apiUrl = 'http://localhost:8080/api/trip/search?';
+        $pageSize = 5;
+
+        // Thêm các tham số vào URL nếu có giá trị
+        if ($departure != 'All') {
+            $apiUrl .= 'departure=' . urlencode($departure) . '&';
+        }
+
+        if ($destination != 'All') {
+            $apiUrl .= 'destination=' . urlencode($destination) . '&';
+        }
+
+        // Bỏ dấu '&' cuối cùng (nếu có)
+        $apiUrl = rtrim($apiUrl, '&');
+
+     
+
+        // Gọi API để lấy dữ liệu chuyến đi
+        $apiResponse = ApiController::getData($apiUrl);
+  
+
+        // Giả định rằng API trả về các chuyến đi
+
+        $trips = $apiResponse['trips'] ?? []; // Cập nhật tên trường tương ứng với phản hồi API
+     
+        // $response = Http::get("http://localhost:8080/api/trip/page", [
+        //     'pageSize' => self::PAGE_SIZE,
+        //     'pageNo' => $page - 1,
+        // ]);
+
+        // $trips = $response['data']['items'];
+        $totalPages = $apiResponse['totalPages'] ?? 1; // Cập nhật tên trường tương ứng với phản hồi API
+
+        // Lấy thông báo từ session và xóa nó
+        $message = session()->get('message');
+        session()->forget('message'); // Xóa thông báo khỏi session
+
+        $departures = TripController::getAllDeparture();
+        $destinations = TripController::getAllDestination();
+        $search = true;
+        // Truyền các giá trị về view
+        return view('Admin.Pages.trip', [
+            'pageSize' => $pageSize,
+            'totalPages' => $totalPages,
+            'currentPage' => $page,
+            'message' => $message,
+            'departure' => $departure,
+            'destination' => $destination,
+            'trips' => $trips,
+            'search' => $search,
+            'departures' => $departures,
+            'destinations' => $destinations
+        ]);
     }
 }

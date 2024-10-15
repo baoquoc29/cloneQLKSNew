@@ -115,6 +115,7 @@
                             <input type="hidden" id="hidden-email" name="email" value="">
                             <input type="hidden" id="hidden-pickup_location" name="pickup_location" value="">
                             <input type="hidden" id="hidden-dropoff_location" name="dropoff_location" value="">
+                            <input type="hidden" id="hidden-total-price" name="total_price" value="">
 
                             <div class="form-group">
                                 <label for="name" class="form-label"><i
@@ -458,7 +459,8 @@
                 // Cập nhật số tiền giảm giá và tổng tiền sau khi giảm giá
                 const discountValue = parseInt(discountAmountElement.text().replace(' VNĐ', '')) || 0;
                 const totalAfterDiscountValue = totalPrice - discountValue;
-                totalAfterDiscountElement.text(totalAfterDiscountValue + ' VNĐ');
+                totalAfterDiscountElement.text(formatCurrency(totalAfterDiscountValue));
+                $('#hidden-total-price').val(totalAfterDiscountValue);
             }
 
             // Hàm kiểm tra form
@@ -523,35 +525,64 @@
             // Gọi hàm kiểm tra form khi có thay đổi trong các trường input
             $('#name, #phone, #email, #pickup-location, #dropoff-location').on('input', validateForm);
 
-            // Xử lý áp dụng mã giảm giá
-            $('#apply-promo-btn').click(function() {
-                const promoCode = $('#promotion_code').val();
+            // Thêm hàm này vào phần script của bạn
+            function checkPromoCode() {
+                const promoCode = $('#promotion_code').val().trim();
+                const totalPrice = parseInt($('#total-price').text().replace(' VNĐ', '')) || 0;
+
+                if (!promoCode) {
+                    $('#promo-error').text('Vui lòng nhập mã khuyến mãi.');
+                    $('#promo-success').text('');
+                    return;
+                }
+
                 // Gửi yêu cầu kiểm tra mã giảm giá đến server
                 $.ajax({
-                    url: '/check-promo-code',
+                    url: `http://localhost:8080/api/promotions/checkPromoCode/${promoCode}/${totalPrice}`,
                     method: 'POST',
-                    data: {
-                        promoCode: promoCode,
-                        totalPrice: parseInt($('#total-price').text().replace(' VNĐ', ''))
-                    },
                     success: function(response) {
-                        if (response.valid) {
-                            $('#discount-amount').text('-' + response.discountAmount + ' VNĐ');
-                            $('#total-after-discount').text(response.totalAfterDiscount +
-                                ' VNĐ');
-                            $('#promo-success').text('Mã giảm giá đã được áp dụng thành công!');
-                            $('#promo-error').text('');
+                        if (response.success && response.code === 200) {
+                            const discountedPrice = response.data;
+                            if (discountedPrice === totalPrice) {
+                                $('#promo-error').text('Mã khuyến mãi không hợp lệ hoặc đã hết hạn.');
+                                $('#promo-success').text('');
+                                $('#discount-amount').text('0%');
+                                $('#total-after-discount').text(formatCurrency(totalPrice));
+                                $('#hidden-total_after_discount').val(totalPrice);
+                            } else {
+                                const discountPercentage = ((totalPrice - discountedPrice) / totalPrice) * 100;
+                                const roundedDiscountPercentage = Math.round(discountPercentage);
+                                $('#discount-amount').text(`-${roundedDiscountPercentage}%`);
+                                $('#total-after-discount').text(formatCurrency(discountedPrice));
+                                $('#promo-success').text(`Mã giảm giá ${roundedDiscountPercentage}% đã được áp dụng thành công!`);
+                                $('#promo-error').text('');
+                                $('#hidden-total_after_discount').val(discountedPrice);
+                            }
                         } else {
-                            $('#promo-error').text('Mã giảm giá không hợp lệ hoặc đã hết hạn.');
+                            $('#promo-error').text('Có lỗi xảy ra khi kiểm tra mã giảm giá.');
                             $('#promo-success').text('');
+                            $('#discount-amount').text('0%');
+                            $('#total-after-discount').text(formatCurrency(totalPrice));
+                            $('#hidden-total_after_discount').val(totalPrice);
                         }
                     },
                     error: function() {
                         $('#promo-error').text('Có lỗi xảy ra khi kiểm tra mã giảm giá.');
                         $('#promo-success').text('');
+                        $('#discount-amount').text('0%');
+                        $('#total-after-discount').text(formatCurrency(totalPrice));
+                        $('#hidden-total_after_discount').val(totalPrice);
                     }
                 });
-            });
+            }
+
+            // Hàm định dạng tiền tệ
+            function formatCurrency(amount) {
+                return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+            }
+
+            // Thêm sự kiện click cho nút áp dụng mã khuyến mãi
+            $('#apply-promo-btn').click(checkPromoCode);
 
             // Xác thực form trước khi submit
             $('#bookingForm').submit(function(e) {
@@ -569,6 +600,9 @@
 
             // Khởi tạo: vô hiệu hóa nút thanh toán
             $('#submit-button').prop('disabled', true);
+
+            // Khởi tạo giá trị cho hidden input total_after_discount
+            $('#hidden-total_after_discount').val($('#total-after-discount').text().replace(/[^\d]/g, ''));
         });
     </script>
 @endsection

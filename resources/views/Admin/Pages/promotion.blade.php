@@ -63,18 +63,39 @@
                         </button>
                     </div>
                 </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <form id="searchPromotionForm" action="#" method="GET" class="d-flex mb-3">
-                        <input type="text" class="form-control search-input me-2" id="searchPromotionDescription"
-                            name="searchPromotionDescription" placeholder="Tìm kiếm khuyến mãi...">
-                        <button type="submit" class="btn btn-outline-primary">Tìm kiếm</button>
-                    </form>
-                    <div>
-                        <a href="#" class="btn btn-success btn-export"><i class="fas fa-file-excel me-2"></i>Excel</a>
-                        <a href="#" class="btn btn-danger btn-export"><i class="fas fa-file-pdf me-2"></i>PDF</a>
-                        <a href="#" class="btn btn-info btn-export"><i class="fas fa-print me-2"></i>In</a>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Tìm Kiếm Nâng Cao</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="searchPromotionForm" action="{{ route('promotion.search') }}" method="GET">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="searchPromotionCode" class="form-label">Mã Khuyến Mãi</label>
+                                    <input type="text" class="form-control" id="searchPromotionCode" name="searchPromotionCode"
+                                        value="{{ $searchPromotionCode ?? '' }}">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="searchStartDate" class="form-label">Ngày Bắt Đầu</label>
+                                    <input type="date" class="form-control" id="searchStartDate" name="searchStartDate">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="searchEndDate" class="form-label">Ngày Kết Thúc</label>
+                                    <input type="date" class="form-control" id="searchEndDate" name="searchEndDate">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-start">
+                                <button type="submit" class="btn btn-primary me-2">Tìm kiếm</button>
+                                <button type="button" class="btn btn-secondary" id="resetSearchForm">Xóa bộ lọc</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
+                {{-- <div class="d-flex justify-content-end mb-3">
+                    <a href="#" class="btn btn-success btn-export me-2"><i class="fas fa-file-excel me-2"></i>Excel</a>
+                    <a href="#" class="btn btn-danger btn-export me-2"><i class="fas fa-file-pdf me-2"></i>PDF</a>
+                    <a href="#" class="btn btn-info btn-export"><i class="fas fa-print me-2"></i>In</a>
+                </div> --}}
             </div>
             <div class="panel-body">
                 <div class="table-responsive">
@@ -216,6 +237,45 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+
+            // Hàm để cập nhật các ràng buộc ngày
+            function updateDateConstraints(startDateInput, endDateInput) {
+                startDateInput.min = today;
+                endDateInput.min = startDateInput.value || today;
+
+                startDateInput.addEventListener('change', function() {
+                    endDateInput.min = this.value;
+                    if (endDateInput.value < this.value) {
+                        endDateInput.value = this.value;
+                    }
+                });
+
+                endDateInput.addEventListener('change', function() {
+                    if (this.value < startDateInput.value) {
+                        this.value = startDateInput.value;
+                    }
+                });
+            }
+
+            // Cập nhật cho modal thêm mới
+            const addStartDate = document.getElementById('promotionStartDate');
+            const addEndDate = document.getElementById('promotionEndDate');
+            
+            // Đặt giá trị mặc định cho ngày bắt đầu và ngày kết thúc là ngày hôm nay
+            addStartDate.value = today;
+            addEndDate.value = today;
+            
+            updateDateConstraints(addStartDate, addEndDate);
+
+            // Cập nhật lại ngày mỗi khi modal thêm mới được mở
+            $('#addPromotionModal').on('show.bs.modal', function () {
+                addStartDate.value = today;
+                addEndDate.value = today;
+                updateDateConstraints(addStartDate, addEndDate);
+            });
+
+            // Cập nhật cho modal sửa
             var updatePromotionModal = document.getElementById('updatePromotionModal');
             updatePromotionModal.addEventListener('show.bs.modal', function(event) {
                 var button = event.relatedTarget;
@@ -226,11 +286,9 @@
                 var endDate = button.getAttribute('data-end-date');
 
                 var promotionCodeInput = updatePromotionModal.querySelector('#updatePromotionCode');
-                var promotionDescriptionInput = updatePromotionModal.querySelector(
-                    '#updatePromotionDescription');
+                var promotionDescriptionInput = updatePromotionModal.querySelector('#updatePromotionDescription');
                 var promotionDiscountInput = updatePromotionModal.querySelector('#updatePromotionDiscount');
-                var promotionStartDateInput = updatePromotionModal.querySelector(
-                    '#updatePromotionStartDate');
+                var promotionStartDateInput = updatePromotionModal.querySelector('#updatePromotionStartDate');
                 var promotionEndDateInput = updatePromotionModal.querySelector('#updatePromotionEndDate');
 
                 promotionCodeInput.value = code;
@@ -238,7 +296,20 @@
                 promotionDiscountInput.value = discount;
                 promotionStartDateInput.value = startDate;
                 promotionEndDateInput.value = endDate;
+
+                updateDateConstraints(promotionStartDateInput, promotionEndDateInput);
             });
+
+            // Xử lý reset form tìm kiếm
+            document.getElementById('resetSearchForm').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = "{{ route('promotion') }}";
+            });
+
+            // Cập nhật cho form tìm kiếm
+            const searchStartDate = document.getElementById('searchStartDate');
+            const searchEndDate = document.getElementById('searchEndDate');
+            updateDateConstraints(searchStartDate, searchEndDate);
         });
 
         function confirmDelete(url) {

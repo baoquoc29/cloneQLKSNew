@@ -28,7 +28,7 @@ class BookingController extends Controller
     {
         $tripDetail = TripDetailController::getTripDetailById($tripDetailId);
         $seatMaps = TripDetailController::getSeatMaps($tripDetailId, $departureDate);
-       // return $seatsMap;
+        // return $seatsMap;
 
         // Nếu tripDetail không tồn tại, có thể xử lý lỗi hoặc quay lại trang trước đó
         if (!$tripDetail) {
@@ -86,6 +86,19 @@ class BookingController extends Controller
         //Lay ra danh sach ghe da chon
         $selectedSeats = $request->input('selectedSeats');
         $totalPrice = $price * count(explode(',', $selectedSeats));
+        if (!empty($promotionCode)) {
+            // Gọi API để lấy giá khuyến mãi
+            $response = ApiController::postData("http://localhost:8080/api/promotions/checkPromoCode/$promotionCode/$totalPrice", []);
+
+            // Chuyển đổi phản hồi thành mảng để truy cập 'data'
+            $responseData = $response->getData(true); // Truyền 'true' để nhận về mảng thay vì object
+            $pricePromotion = $responseData['data'];
+        } else {
+            // Nếu không có mã khuyến mãi, giá vẫn là tổng giá ban đầu
+            $pricePromotion = $totalPrice;
+        }
+
+        $totalPrice = $pricePromotion;
 
         // $customer = [
         //     "name" => $name,
@@ -132,7 +145,7 @@ class BookingController extends Controller
         ];
 
         $validator = Validator::make($request->all(), $rules);
-    
+
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()]);
         }
@@ -158,6 +171,7 @@ class BookingController extends Controller
         $name = $request->input('fullName');
         $email = $request->input('email');
         $phone = $request->input('phone');
+        $bookingId = $request->input('ticketCode');
 
         // Tạo mảng customer với các thông tin cần thiết
         $customer = [
@@ -170,13 +184,22 @@ class BookingController extends Controller
         $queryString = http_build_query($customer);
 
         // Gọi API với URL đã có query string
-        $bookedTickets = ApiController::getData("http://localhost:8080/api/booking/history-booked?" . $queryString);
+        if (empty($bookingId)) {
+            $bookedTickets = ApiController::getData("http://localhost:8080/api/booking/history-booked?" . $queryString);
+        } else {
+            // Thêm bookingId vào query string
+            // Chuyển đổi bookingId từ chuỗi sang số nguyên (int)
+            $ticketId = intval($bookingId);
+
+            $bookedTickets = ApiController::getData("http://localhost:8080/api/booking/history-booked/all?" . $queryString . "&bookingId=" . $ticketId);
+        }
 
         return view('Pages.history-booking', compact(
             'bookedTickets',
             'name',
             'phone',
-            'email'
+            'email',
+            'bookingId'
         ));
     }
 
@@ -197,7 +220,7 @@ class BookingController extends Controller
 
         // Lấy dữ liệu từ JsonResponse
         $responseData = $response->getData(true);
-    
+
         // Kiểm tra giá trị của 'success'
         if (isset($responseData['success']) && $responseData['success'] == 'true') {
             // Nếu mã xác nhận hợp lệ

@@ -15,6 +15,7 @@ class TripDetailController extends Controller
     private const BOOKING_ADVANCED_SEARCH = 'booking/search/advanced';
 
     private const PAGE_SIZE = 5;
+    private $search = false;
 
     public function store(Request $request)
     {
@@ -48,7 +49,8 @@ class TripDetailController extends Controller
         $destination = $request->input('destination');
         $departureDate = $request->input('departure-date');
         $carType = null;
-
+        $timeRange = 'All';
+        $carTypeRequest = 'All';
         //Lay ra danh sach departures va destinations
         $departures = TripController::getAllDeparture();
         $destinations = TripController::getAllDestination();
@@ -68,8 +70,63 @@ class TripDetailController extends Controller
             "destinations",
             "carTypes",
             "filteredTripDetails",
-            'carType'
+            'carType',
+            'timeRange',
+            'carTypeRequest'
         ));
+    }
+
+    public function storeSearchPagination(Request $request, $page)
+    {
+        $departure = $request->input('departure');
+        $destination = $request->input('destination');
+        $departureDate = $request->input('departure-date');
+        $carType = null;
+        $timeRange = 'All';
+        $carTypeRequest = 'All';
+
+        $departures = TripController::getAllDeparture();
+        $destinations = TripController::getAllDestination();
+        $carTypes = CarTypeController::getAllCarType();
+
+        $response = $this->searchTripDetailPagination($departure, $destination, $departureDate, $page - 1);
+
+        $filteredTripDetails = $response['content'];
+        $paginator = new LengthAwarePaginator(
+            $filteredTripDetails,
+            $response['totalElements'],
+            $response['size'],
+            $response['number'] + 1,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        return view('Pages.booking', compact(
+            "departure",
+            "destination",
+            "departureDate",
+            "departures",
+            "destinations",
+            "carTypes",
+            "filteredTripDetails",
+            'carType',
+            'timeRange',
+            'carTypeRequest',
+            'page',
+            'paginator' // Thêm biến paginator vào đây
+        ));
+    }
+
+    private function searchTripDetailPagination($departure, $destination, $departureDate, $page)
+    {
+        $queryParams = http_build_query([
+            'departure' => $departure,
+            'destination' => $destination,
+            'departure-date' => $departureDate,
+            'page' => $page
+        ]);
+
+        $apiUrl = "http://localhost:8080/api/trip-detail/search/page?" . $queryParams;
+        return ApiController::getData($apiUrl);
     }
 
     public function storeSearchAdvanced(Request $request)
@@ -81,10 +138,39 @@ class TripDetailController extends Controller
         $departure = $request->input('departure');
         $destination = $request->input('destination');
         $departureDate = $request->input('departure-date');
-        $carType = $request->input('car-type');
-        if($carType == 'Tất cả') $carType = 'All';
+        $carTypeRequest = $request->input('car-type');
+        $timeRange = $request->input('time-range');
+        // Khởi tạo giá trị mặc định cho startTime và endTime
+        $startTime = null;
+        $endTime = null;
+
+        switch ($timeRange) {
+            case 'morning':
+                // Sáng: từ 5:00 đến 11:59
+                $startTime = '05:00:00';
+                $endTime = '11:59:59';
+                break;
+            case 'afternoon':
+                // Chiều: từ 12:00 đến 17:59
+                $startTime = '12:00:00';
+                $endTime = '17:59:59';
+                break;
+            case 'evening':
+                // Tối: từ 18:00 đến 4:59
+                $startTime = '18:00:00';
+                $endTime = '04:59:59';
+                break;
+            default:
+                // Tất cả: từ 0h đến 23h59
+                $startTime = '00:00:00';
+                $endTime = '23:59:59';
+                break;
+        }
+
+
+        if ($carTypeRequest == 'Tất cả') $carTypeRequest = 'All';
         $priceRange = $request->input('price-range-input');
-        
+
 
         // Tách chuỗi thành hai phần
         list($minPrice, $maxPrice) = $this->getPriceRange($priceRange);
@@ -97,7 +183,7 @@ class TripDetailController extends Controller
         $carTypes = CarTypeController::getAllCarType();
 
         //Lay ra danh sach trip-detail
-        $filteredTripDetails = $this->searchAdvancedTripDetail($departure, $destination, $departureDate, $carType, $minPrice, $maxPrice);
+        $filteredTripDetails = $this->searchAdvancedTripDetail($departure, $destination, $departureDate, $carTypeRequest, $minPrice, $maxPrice, $startTime, $endTime);
 
         //Trả về một phản hồi hoặc chuyển hướng
         return view('Pages.booking', compact(
@@ -106,11 +192,14 @@ class TripDetailController extends Controller
             "departureDate",
             "departures",
             "destinations",
-            "carType",
+            "carTypeRequest",
             "minPrice",
             "maxPrice",
             "carTypes",
-            "filteredTripDetails"
+            "filteredTripDetails",
+            "startTime",
+            "endTime",
+            'timeRange'
         ));
     }
 
@@ -163,7 +252,7 @@ class TripDetailController extends Controller
         return $filteredTripDetails;
     }
 
-    public static function searchAdvancedTripDetail($departure, $destination, $departureDate, $carType, $minPrice, $maxPrice)
+    public static function searchAdvancedTripDetail($departure, $destination, $departureDate, $carType, $minPrice, $maxPrice, $startTime, $endTime)
     {
         $queryParams = http_build_query([
             'departure' => $departure,
@@ -171,7 +260,9 @@ class TripDetailController extends Controller
             'departure-date' => $departureDate,
             'car-type' => $carType,
             'min-price' => $minPrice,
-            'max-price' => $maxPrice
+            'max-price' => $maxPrice,
+            'start-time' => $startTime,
+            'end-time' => $endTime
         ]);
 
         $apiUrl = ApiEndpoints::API_TRIP_DETAIL_SEARCH_ADVANCED . $queryParams;
@@ -179,7 +270,7 @@ class TripDetailController extends Controller
         return $filteredTripDetails;
     }
 
-    public static function tripDetailManagement($page = 1)
+    public function tripDetailManagement($page)
     {
         $response = Http::get("http://localhost:8080/api/trip-detail/page", [
             'pageSize' => self::PAGE_SIZE,
@@ -203,9 +294,16 @@ class TripDetailController extends Controller
         // Lấy thông báo từ session và xóa nó
         $message = session()->get('message');
         session()->forget('message');
+        
+        $carTypeSearch = $destination = $departure = 'All';
 
         $trips = TripController::getAllTrip();
         $cars = CarController::getAllCar();
+        $departures = TripController::getAllDeparture();
+        $destinations = TripController::getAllDestination();
+        $carTypes = CarTypeController::getAllCarType();
+        $search = false;
+
         return view('Admin.Pages.trip-detail', [
             'tripDetails' => $tripDetails,
             'trips' => $trips,
@@ -213,7 +311,14 @@ class TripDetailController extends Controller
             'totalPages' => $totalPages,
             'currentPage' => $page,
             'pageSize' => self::PAGE_SIZE,
-            'message' => $message
+            'message' => $message,
+            'carTypeSearch' => $carTypeSearch,
+            'departure' => $departure,
+            'destination' => $destination,
+            'departures' => $departures,
+            'destinations' => $destinations,
+            'carTypes' => $carTypes,
+            'search' => $search
         ]);
     }
 
@@ -323,7 +428,7 @@ class TripDetailController extends Controller
                 return redirect()->back()->with('error', $message);
             }
         } else {
-            // Nếu không phải JsonResponse, xử lý trường hợp lỗi hoặc thông báo không chính xác
+            // Nếu không phải JsonResponse, x��� lý trường hợp lỗi hoặc thông báo không chính xác
             $message = 'Có lỗi xảy ra khi cập nhật';
             session()->put('message', $message);
             return redirect()->back()->with('error', $message);
@@ -342,5 +447,100 @@ class TripDetailController extends Controller
         $currentPage = ($totalElements % $pageSize == 1 && $currentPage == $totalPages) ? $currentPage - 1 : $currentPage;
 
         return redirect()->route('trip-detail', ['page' => $currentPage]);
+    }
+
+    public function search(Request $request, $page = 1)
+    {
+        // Lấy các giá trị từ form yêu cầu
+        $departure = $request->input('departure');
+        $destination = $request->input('destination');
+        $licensePlate = $request->input('licensePlate');
+        $carTypeSearch = $request->input('carTypeSearch');
+        $priceFrom = $request->input('priceFrom');
+        $priceTo = $request->input('priceTo');
+        $departureTimeFrom = $request->input('departureTimeFrom');
+        $departureTimeTo = $request->input('departureTimeTo');
+
+        // Nếu tất cả các tham số tìm kiếm trống, quay về trang chính với phân trang
+        if ($departure == 'All' && $destination == 'All' && empty($licensePlate) && $carTypeSearch == 'All' && empty($priceFrom) && empty($priceTo) && empty($departureTimeFrom) && empty($departureTimeTo)) {
+            return redirect()->route('trip-detail', ['page' => 1]);
+        }
+
+        // Tạo đường dẫn API dựa trên các tham số tìm kiếm từ form
+        $apiUrl = 'http://localhost:8080/api/trip-detail/searchTripDetails?';
+
+        // Thêm các tham số vào URL nếu có giá trị
+        if ($departure != 'All') {
+            $apiUrl .= 'departure=' . urlencode($departure) . '&';
+        }
+        if ($destination != 'All') {
+            $apiUrl .= 'destination=' . urlencode($destination) . '&';
+        }
+        if (!empty($licensePlate)) {
+            $apiUrl .= 'licensePlate=' . urlencode($licensePlate) . '&';
+        }
+        if ($carTypeSearch != 'All') {
+            $apiUrl .= 'carTypeName=' . urlencode($carTypeSearch) . '&';
+        }
+        if (!empty($priceFrom)) {
+            $apiUrl .= 'minPrice=' . $priceFrom . '&';
+        }
+        if (!empty($priceTo)) {
+            $apiUrl .= 'maxPrice=' . $priceTo . '&';
+        }
+        if (!empty($departureTimeFrom)) {
+            $apiUrl .= 'startTime=' . urlencode($departureTimeFrom) . '&';
+        }
+        if (!empty($departureTimeTo)) {
+            $apiUrl .= 'endTime=' . urlencode($departureTimeTo) . '&';
+        }
+
+        // Thêm phân trang (số trang và kích thước trang)
+        $pageNo = $page - 1; // Đặt trang hiện tại (API trang đầu tiên là 0)
+        $pageSize = 5; // Số lượng mục mỗi trang
+        $apiUrl .= 'pageNo=' . $pageNo . '&pageSize=' . $pageSize;
+
+        // Bỏ dấu '&' cuối cùng (nếu có)
+        $apiUrl = rtrim($apiUrl, '&');
+
+        // Gọi API để lấy dữ liệu loại chuyến xe với các tham số tìm kiếm
+        $apiResponse = ApiController::getData($apiUrl);
+
+        $tripDetails = $apiResponse['tripDetails'] ?? [];
+        $totalPages = $apiResponse['totalPages'] ?? 1;
+
+        // Lấy thông báo từ session và xóa nó
+        $message = session()->get('message');
+        session()->forget('message'); // Xóa thông báo khỏi session
+
+        // Chuẩn bị dữ liệu để gửi về view
+        $carTypes = CarTypeController::getAllCarType();
+        $departures = TripController::getAllDeparture();
+        $destinations = TripController::getAllDestination();
+        $trips = TripController::getAllTrip();
+        $cars = CarController::getAllCar();
+
+        $search = true;
+        return view('Admin.Pages.trip-detail', [
+            'carTypes' => $carTypes,
+            'totalPages' => $totalPages,
+            'currentPage' => $page,
+            'pageSize' => $pageSize,
+            'message' => $message,
+            'departure' => $departure,
+            'destination' => $destination,
+            'licensePlate' => $licensePlate,
+            'carTypeSearch' => $carTypeSearch,
+            'priceFrom' => $priceFrom,
+            'priceTo' => $priceTo,
+            'departureTimeFrom' => $departureTimeFrom,
+            'departureTimeTo' => $departureTimeTo,
+            'tripDetails' => $tripDetails,
+            'departures' => $departures,
+            'destinations' => $destinations,
+            'search' => $search,
+            'trips' => $trips,
+            'cars' => $cars
+        ]);
     }
 }

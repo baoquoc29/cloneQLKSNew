@@ -47,6 +47,7 @@
 
     <!-- Content -->
     <div class="container mt-4 content-wrapper">
+
         <div class="panel">
             <div class="panel-header">
                 <div class="d-flex justify-content-between mb-3">
@@ -56,15 +57,124 @@
                         </button>
                     </div>
 
-                    <div>
+                    {{-- <div>
                         <a href="#" class="btn btn-primary btn-export"><i class="fas fa-file-excel"></i> Excel</a>
                         <a href="#" class="btn btn-danger btn-export"><i class="fas fa-file-pdf"></i> PDF</a>
                         <a href="#" class="btn btn-info btn-export"><i class="fas fa-print"></i> Print</a>
+                    </div> --}}
+                </div>
+
+                <div class="container mt-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Tìm Kiếm Nâng Cao</h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="searchForm" action="{{ route('trip-detail.search', ['page' => 1]) }}" method="GET">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="departure">Địa điểm đi</label>
+                                            <select class="form-control" id="departure" name="departure">
+                                                <option value="All" @if ($departure == 'All') selected @endif>
+                                                    Tất cả
+                                                </option>
+                                                <!-- Thêm các địa điểm khác ở đây -->
+                                                @foreach ($departures as $dep)
+                                                    <option value="{{ $dep['departure'] }}"
+                                                        @if ($departure == $dep['departure']) selected @endif>
+                                                        {{ $dep['departure'] }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="destination">Địa điểm đến</label>
+                                            <select class="form-control" id="destination" name="destination">
+                                                <option value="All" @if ($destination == 'All') selected @endif>
+                                                    Tất cả</option>
+                                                <!-- Thêm các địa điểm khác ở đây -->
+                                                @foreach ($destinations as $des)
+                                                    <option value="{{ $des['destination'] }}"
+                                                        @if ($destination == $des['destination']) selected @endif>
+                                                        {{ $des['destination'] }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="licensePlate">Biển số xe</label>
+                                            <input type="text" class="form-control" id="licensePlate" name="licensePlate"
+                                                placeholder="Nhập biển số xe" value="{{ $licensePlate ?? '' }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="carType">Loại xe</label>
+                                            <select class="form-control" id="carTypeSearch" name="carTypeSearch">
+                                                <option value="All" @if ($carTypeSearch == 'All') selected @endif>
+                                                    Tất cả</option>
+                                                @foreach ($carTypes as $type)
+                                                    <option value="{{ $type['name'] }}"
+                                                        @if ($carTypeSearch == $type['name']) selected @endif>
+                                                        {{ $type['name'] }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="priceFrom">Giá từ</label>
+                                            <input type="number" class="form-control" id="priceFrom" name="priceFrom"
+                                                placeholder="Giá từ" value="{{ $priceFrom ?? 0 }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="priceTo">Giá đến</label>
+                                            <input type="number" class="form-control" id="priceTo" name="priceTo"
+                                                placeholder="Giá đến" value="{{ $priceTo ?? 1000000 }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="departureTimeFrom">Thời gian đi từ</label>
+                                            <input type="time" class="form-control" id="departureTimeFrom"
+                                                name="departureTimeFrom" value="{{ $departureTimeFrom ?? '00:00' }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="departureTimeTo">Thời gian đi đến</label>
+                                            <input type="time" class="form-control" id="departureTimeTo"
+                                                name="departureTimeTo" value="{{ $departureTimeTo ?? '23:59' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-12 text-right">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-search"></i> Tìm kiếm
+                                        </button>
+                                        <button type="button" class="btn btn-secondary ms-2" id="resetButton">
+                                            <i class="fas fa-times"></i> Xóa bộ lọc
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
-                <div class="mb-3">
+                {{-- <div class="mb-3">
                     <input type="text" class="form-control search-input" placeholder="Tìm kiếm chuyến đi...">
-                </div>
+                </div> --}}
             </div>
             <div class="panel-body">
                 <div class="card">
@@ -132,7 +242,19 @@
                                 @if ($currentPage > 1)
                                     <li class="page-item">
                                         <a class="page-link"
-                                            href="{{ route('trip-detail', ['page' => $currentPage - 1]) }}"
+                                            href="{{ $search == false
+                                                ? route('trip-detail', ['page' => $currentPage - 1])
+                                                : route('trip-detail.search', [
+                                                    'page' => $currentPage - 1,
+                                                    'departure' => $departure,
+                                                    'destination' => $destination,
+                                                    'licensePlate' => $licensePlate,
+                                                    'carTypeSearch' => $carTypeSearch,
+                                                    'priceFrom' => $priceFrom,
+                                                    'priceTo' => $priceTo,
+                                                    'departureTimeFrom' => $departureTimeFrom,
+                                                    'departureTimeTo' => $departureTimeTo,
+                                                ]) }}"
                                             aria-label="Previous">
                                             <span aria-hidden="true">&laquo;</span>
                                         </a>
@@ -142,14 +264,38 @@
                                 @for ($i = 1; $i <= $totalPages; $i++)
                                     <li class="page-item {{ $i == $currentPage ? 'active' : '' }}">
                                         <a class="page-link"
-                                            href="{{ route('trip-detail', ['page' => $i]) }}">{{ $i }}</a>
+                                            href="{{ $search == false
+                                                ? route('trip-detail', ['page' => $i])
+                                                : route('trip-detail.search', [
+                                                    'page' => $i,
+                                                    'departure' => $departure,
+                                                    'destination' => $destination,
+                                                    'licensePlate' => $licensePlate,
+                                                    'carTypeSearch' => $carTypeSearch,
+                                                    'priceFrom' => $priceFrom,
+                                                    'priceTo' => $priceTo,
+                                                    'departureTimeFrom' => $departureTimeFrom,
+                                                    'departureTimeTo' => $departureTimeTo,
+                                                ]) }}">{{ $i }}</a>
                                     </li>
                                 @endfor
 
                                 @if ($currentPage < $totalPages)
                                     <li class="page-item">
                                         <a class="page-link"
-                                            href="{{ route('trip-detail', ['page' => $currentPage + 1]) }}"
+                                            href="{{ $search == false
+                                                ? route('trip-detail', ['page' => $currentPage + 1])
+                                                : route('trip-detail.search', [
+                                                    'page' => $currentPage + 1,
+                                                    'departure' => $departure,
+                                                    'destination' => $destination,
+                                                    'licensePlate' => $licensePlate,
+                                                    'carTypeSearch' => $carTypeSearch,
+                                                    'priceFrom' => $priceFrom,
+                                                    'priceTo' => $priceTo,
+                                                    'departureTimeFrom' => $departureTimeFrom,
+                                                    'departureTimeTo' => $departureTimeTo,
+                                                ]) }}"
                                             aria-label="Next">
                                             <span aria-hidden="true">&raquo;</span>
                                         </a>
@@ -349,5 +495,24 @@
                 }
             });
         @endif
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('resetButton').addEventListener('click', function(e) {
+                e.preventDefault(); // Ngăn chặn hành vi mặc định của nút
+
+                // Reset các trường input
+                document.getElementById('departure').value = 'All';
+                document.getElementById('destination').value = 'All';
+                document.getElementById('licensePlate').value = '';
+                document.getElementById('carTypeSearch').value = 'All';
+                document.getElementById('priceFrom').value = '';
+                document.getElementById('priceTo').value = '';
+                document.getElementById('departureTimeFrom').value = '';
+                document.getElementById('departureTimeTo').value = '';
+
+                // Submit form
+                document.getElementById('searchForm').submit();
+            });
+        });
     </script>
 @endsection

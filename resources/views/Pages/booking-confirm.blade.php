@@ -30,8 +30,13 @@
                             {{ $departureDate }}</p>
                         <p><i class="fas fa-chair text-primary mr-2"></i><strong>Ghế đã chọn:</strong> {{ $selectedSeats }}
                         </p>
-                        <p class="h4 mt-3"><i class="fas fa-money-bill-wave text-success mr-2"></i><strong>Tổng
-                                tiền:</strong> <span class="text-success">{{ $totalPrice }}</span></p>
+                        <p class="h4 mt-3">
+                            <i class="fas fa-money-bill-wave text-success mr-2"></i>
+                            <strong>Tổng tiền:</strong>
+                            <span class="text-success">
+                                {{ number_format($totalPrice, 0, ',', '.') . ' VNĐ' }}
+                            </span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -73,6 +78,7 @@
             <input type="hidden" name="email" value="{{ $email }}">
             <input type="hidden" name="pickup_location" value="{{ $startDestination }}">
             <input type="hidden" name="dropoff_location" value="{{ $endDestination }}">
+            <input type="hidden" id="hidden-promotionCode" name="promotionCode" value="{{ $promotionCode }}">
 
             <button type="submit" class="btn btn-primary btn-lg btn-block" id="paymentButton">
                 <i class="fas fa-check-circle mr-2"></i>Xác nhận thanh toán

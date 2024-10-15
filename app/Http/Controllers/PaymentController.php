@@ -29,6 +29,7 @@ class PaymentController extends Controller
     private $destinationTime;
     private $carType;
     private $totalPrice;
+    private $promotionCode;
 
     // private $appId = 553;
     // private $key1 = "9phuAOYhan4urywHTh0ndEXiV3pKHr5Q";
@@ -55,6 +56,7 @@ class PaymentController extends Controller
         $this->selectedSeats = $request->input('selectedSeats');
         $this->selectedSeatIds = $request->input('selectedSeatIds');
         $this->tripDetailId = $request->input('trip-detail-id');
+        $this->promotionCode = $request->input('promotionCode');
 
         // Lấy thông tin chuyến đi
         $this->tripDetail = TripDetailController::getTripDetailById($this->tripDetailId);
@@ -78,6 +80,7 @@ class PaymentController extends Controller
             'departureDate' => $this->departureDate,
             'selectedSeatIds' => $this->selectedSeatIds,
             'tripDetail' => $this->tripDetail,
+            'promotionCode' => $this->promotionCode
         ]);
 
         $embeddata = [
@@ -134,6 +137,7 @@ class PaymentController extends Controller
         $departureDate = session('departureDate');
         $selectedSeatIds = session('selectedSeatIds');
         $tripDetail = session('tripDetail');
+        $promotionCode = session('promotionCode');
 
         // Chuyển đổi chuỗi thành mảng số nguyên dương
         $selectedSeatIdsArray = array_map('intval', explode(',', $selectedSeatIds));
@@ -156,8 +160,12 @@ class PaymentController extends Controller
         // $bookingSeatRequest = [
         //     "booking" => $bookingRequest
         // ];
-
-        $bookingSeatResponse = ApiController::postData(ApiEndpoints::API_BOOKING_SEAT_POST, $bookingRequest);
+        if (!empty($promotionCode)) {
+            $bookingSeatResponse = ApiController::postData(ApiEndpoints::API_BOOKING_SEAT_PROMOTION_POST . $promotionCode, $bookingRequest);
+        }
+        else {
+            $bookingSeatResponse = ApiController::postData(ApiEndpoints::API_BOOKING_SEAT_POST, $bookingRequest);
+        }
         //Trả về một phản hồi hoặc chuyển hướng
         return view('Pages.notifycation');
     }

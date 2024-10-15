@@ -61,6 +61,79 @@
     <div class="container mt-4 content-wrapper">
         <div class="panel">
             <div class="panel-header">
+                <!-- Form tìm kiếm nâng cao -->
+                <div class="container mt-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Tìm Kiếm Nâng Cao</h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="searchForm" action="{{ route('car.search', ['page' => 1]) }}" method="GET">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="licensePlate">Biển số xe</label>
+                                            <input type="text" class="form-control" id="licensePlate" name="licensePlate"
+                                                placeholder="Nhập biển số xe" value="{{ $licensePlate ?? '' }}">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="carType">Loại xe</label>
+                                            <select class="form-control" id="carTypeSearch" name="carTypeSearch">
+                                                <option value="All" @if ($carTypeSearch == 'All') selected @endif>
+                                                    Tất cả</option>
+                                                @foreach ($carTypes as $type)
+                                                    <option value="{{ $type['name'] }}"
+                                                        @if ($carTypeSearch == $type['name']) selected @endif>
+                                                        {{ $type['name'] }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="numberOfSeats">Số ghế</label>
+                                            <input type="number" class="form-control" id="numberOfSeats"
+                                                name="numberOfSeats" placeholder="Nhập số ghế"
+                                                value="{{ $numberOfSeats ?? '' }}" min="1" max="50">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="status">Trạng thái</label>
+                                            <select class="form-control" id="status" name="status">
+                                                <option value="All" @if ($status == 'All') selected @endif>Tất
+                                                    cả</option>
+                                                <option value="Hoạt động" @if ($status == 'Hoạt động') selected @endif>
+                                                    Hoạt động</option>
+                                                <option value="Bảo trì" @if ($status == 'Bảo trì') selected @endif>
+                                                    Bảo trì
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-12 text-right">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-search"></i> Tìm kiếm
+                                        </button>
+                                        <!-- Thêm lớp ms-2 để tạo khoảng cách -->
+                                        <button type="button" class="btn btn-secondary ms-2" id="resetButton">
+                                            <i class="fas fa-times"></i> Xóa bộ lọc
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
                 <div class="d-flex justify-content-between mb-3">
                     <div>
                         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCarModal">
@@ -68,11 +141,11 @@
                         </button>
                     </div>
 
-                    <div>
+                    {{-- <div>
                         <a href="#" class="btn btn-primary btn-export"><i class="fas fa-file-excel"></i> Excel</a>
                         <a href="#" class="btn btn-danger btn-export"><i class="fas fa-file-pdf"></i> PDF</a>
                         <a href="#" class="btn btn-info btn-export"><i class="fas fa-print"></i> Print</a>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
             <div class="panel-body">
@@ -112,7 +185,8 @@
                                                     class="fas fa-eye"></i></a>
                                             <a href="#" class="btn btn-warning btn-sm action-icons"
                                                 data-bs-toggle="modal" data-bs-target="#updateCarModal"
-                                                data-id="{{ $car['carId'] }}" data-licenseplate="{{ $car['licensePlate'] }}"
+                                                data-id="{{ $car['carId'] }}"
+                                                data-licenseplate="{{ $car['licensePlate'] }}"
                                                 data-cartype="{{ $car['carType']['name'] }}"
                                                 data-seats="{{ $car['numberOfSeats'] }}"
                                                 data-status="{{ $car['status'] }}" title="Sửa"><i
@@ -131,7 +205,16 @@
                             <ul class="pagination">
                                 @if ($currentPage > 1)
                                     <li class="page-item">
-                                        <a class="page-link" href="{{ route('report', ['page' => $currentPage - 1]) }}"
+                                        <a class="page-link"
+                                            href="{{ $search == false
+                                                ? route('car', ['page' => $currentPage - 1])
+                                                : route('car.search', [
+                                                    'page' => $currentPage - 1,
+                                                    'licensePlate' => $licensePlate,
+                                                    'carTypeSearch' => $carTypeSearch,
+                                                    'numberOfSeats' => $numberOfSeats,
+                                                    'status' => $status,
+                                                ]) }}"
                                             aria-label="Previous">
                                             <span aria-hidden="true">&laquo;</span>
                                         </a>
@@ -141,13 +224,30 @@
                                 @for ($i = 1; $i <= $totalPages; $i++)
                                     <li class="page-item {{ $i == $currentPage ? 'active' : '' }}">
                                         <a class="page-link"
-                                            href="{{ route('car', ['page' => $i]) }}">{{ $i }}</a>
+                                            href="{{ $search == false
+                                                ? route('car', ['page' => $i])
+                                                : route('car.search', [
+                                                    'page' => $i,
+                                                    'licensePlate' => $licensePlate,
+                                                    'carTypeSearch' => $carTypeSearch,
+                                                    'numberOfSeats' => $numberOfSeats,
+                                                    'status' => $status,
+                                                ]) }}">{{ $i }}</a>
                                     </li>
                                 @endfor
 
                                 @if ($currentPage < $totalPages)
                                     <li class="page-item">
-                                        <a class="page-link" href="{{ route('car', ['page' => $currentPage + 1]) }}"
+                                        <a class="page-link"
+                                            href="{{ $search == false
+                                                ? route('car', ['page' => $currentPage + 1])
+                                                : route('car.search', [
+                                                    'page' => $currentPage + 1,
+                                                    'licensePlate' => $licensePlate,
+                                                    'carTypeSearch' => $carTypeSearch,
+                                                    'numberOfSeats' => $numberOfSeats,
+                                                    'status' => $status,
+                                                ]) }}"
                                             aria-label="Next">
                                             <span aria-hidden="true">&raquo;</span>
                                         </a>
@@ -174,7 +274,8 @@
                         @csrf
                         <div class="mb-3">
                             <label for="carLicensePlate" class="form-label">Biển số xe</label>
-                            <input type="text" class="form-control" id="carLicensePlate" name="carLicensePlate" required>
+                            <input type="text" class="form-control" id="carLicensePlate" name="carLicensePlate"
+                                required>
                         </div>
                         <div class="mb-3">
                             <label for="carType" class="form-label">Loại xe</label>
@@ -256,6 +357,24 @@
         </div>
     </div>
 
+    <!-- Thêm JavaScript reset form -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('resetButton').addEventListener('click', function(e) {
+                e.preventDefault(); // Ngăn chặn hành vi mặc định của nút
+
+                // Reset các trường input
+                document.getElementById('licensePlate').value = '';
+                document.getElementById('carTypeSearch').value = 'All';
+                document.getElementById('numberOfSeats').value = '';
+                document.getElementById('status').value = 'All';
+
+                // Submit form
+                document.getElementById('searchForm').submit();
+            });
+        });
+    </script>
+
     <!-- JavaScript to Handle Modal Data -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -315,5 +434,76 @@
                 }
             });
         @endif
+    </script>
+
+    <script>
+        function isValidLicensePlate(licensePlate) {
+            // Biểu thức chính quy cho biển số xe Việt Nam
+            const regex = /^(1[1-9]|[2-9][0-9])[A-Z][1-9]\d{4}$/;
+            return regex.test(licensePlate);
+        }
+
+        function isValidLicensePlateChar(char) {
+            // Chỉ cho phép số, chữ cái in hoa và dấu gạch ngang
+            return /[0-9A-Z-]/.test(char);
+        }
+
+        function validateAddCarForm() {
+            const licensePlate = document.getElementById('carLicensePlate');
+            const seatNumber = document.getElementById('seatNumber');
+            const licensePlateError = document.getElementById('carLicensePlateError');
+            const seatNumberError = document.getElementById('seatNumberError');
+            let isValid = true;
+
+            if (!isValidLicensePlate(licensePlate.value)) {
+                licensePlateError.textContent = 'Biển số xe không hợp lệ';
+                licensePlate.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                licensePlateError.textContent = '';
+                licensePlate.classList.remove('is-invalid');
+            }
+
+            const seats = parseInt(seatNumber.value);
+            if (isNaN(seats) || seats < 4 || seats > 70) {
+                seatNumberError.textContent = 'Số ghế phải từ 4 đến 70';
+                seatNumber.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                seatNumberError.textContent = '';
+                seatNumber.classList.remove('is-invalid');
+            }
+
+            return isValid;
+        }
+
+        function validateUpdateCarForm() {
+            const licensePlate = document.getElementById('updateCarLicensePlate');
+            const seatNumber = document.getElementById('updateSeatNumber');
+            const licensePlateError = document.getElementById('updateCarLicensePlateError');
+            const seatNumberError = document.getElementById('updateSeatNumberError');
+            let isValid = true;
+
+            if (!isValidLicensePlate(licensePlate.value)) {
+                licensePlateError.textContent = 'Biển số xe không hợp lệ';
+                licensePlate.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                licensePlateError.textContent = '';
+                licensePlate.classList.remove('is-invalid');
+            }
+
+            const seats = parseInt(seatNumber.value);
+            if (isNaN(seats) || seats < 4 || seats > 70) {
+                seatNumberError.textContent = 'Số ghế phải từ 4 đến 70';
+                seatNumber.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                seatNumberError.textContent = '';
+                seatNumber.classList.remove('is-invalid');
+            }
+
+            return isValid;
+        }
     </script>
 @endsection

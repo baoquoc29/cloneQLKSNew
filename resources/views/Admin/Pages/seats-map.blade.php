@@ -11,15 +11,15 @@
                     <div class="card-body">
                         <form id="seatForm" class="form-container">
                             <div class="mb-3">
-                                <label for="rows" class="form-label">Số hàng (tối đa 10)</label>
+                                <label for="rows" class="form-label">Số hàng (tối đa 8)</label>
                                 <input type="number" class="form-control" id="rows" name="rows" min="1"
-                                    max="10" value="{{ count($seatMap) > 1 ? count($seatMap) : '' }}"
+                                    max="8" value="{{ count($seatMap) > 1 ? count($seatMap) : '' }}"
                                     {{ count($seatMap) > 1 ? 'readonly' : '' }} required>
                             </div>
                             <div class="mb-3">
-                                <label for="columns" class="form-label">Số cột (tối đa 10)</label>
+                                <label for="columns" class="form-label">Số cột (tối đa 8)</label>
                                 <input type="number" class="form-control" id="columns" name="columns" min="1"
-                                    max="10" value="{{ count($seatMap) > 1 ? count($seatMap[0]) : '' }}"
+                                    max="8" value="{{ count($seatMap) > 1 ? count($seatMap[0]) : '' }}"
                                     {{ count($seatMap) > 1 ? 'readonly' : '' }} required>
                             </div>
                             <button type="button" class="btn btn-primary w-100" onclick="generateSeats()">Tạo sơ
@@ -175,14 +175,18 @@
             font-size: 1rem;
             margin-bottom: 0.5rem;
         }
+
+        .seat.duplicate {
+            border-color: red;
+        }
     </style>
 
     <script>
         const totalSeats = parseInt(document.getElementById('totalSeats').value);
 
         function generateSeats() {
-            const rows = Math.min(document.getElementById('rows').value, 10);
-            const columns = Math.min(document.getElementById('columns').value, 10);
+            const rows = Math.min(document.getElementById('rows').value, 8);
+            const columns = Math.min(document.getElementById('columns').value, 8);
             const seatMap = document.getElementById('seatMap');
             seatMap.innerHTML = '';
 
@@ -196,12 +200,19 @@
                     seatDiv.contentEditable = true;
 
                     seatDiv.oninput = function() {
-                        const seatNumber = seatDiv.textContent.trim();
-                        if (seatNumber) {
-                            seatDiv.classList.add('selected');
-                        } else {
-                            seatDiv.classList.remove('selected');
+                        let seatNumber = this.textContent.trim().toUpperCase();
+                        if (seatNumber.length > 3) {
+                            seatNumber = seatNumber.slice(0, 3);
                         }
+                        this.textContent = seatNumber;
+                        
+                        if (seatNumber) {
+                            this.classList.add('selected');
+                        } else {
+                            this.classList.remove('selected');
+                        }
+
+                        checkDuplicateSeats();
                     };
 
                     rowDiv.appendChild(seatDiv);
@@ -210,17 +221,45 @@
             }
         }
 
-        document.getElementById('seatsForm').addEventListener('submit', function(event) {
-            const seatMatrix = getSeatMatrix();
-            const numberOfSeats = seatMatrix.flat().filter(seat => seat !== '').length;
+        function checkDuplicateSeats() {
+            const seats = document.querySelectorAll('.seat');
+            const seatNumbers = new Set();
+            seats.forEach(seat => {
+                const seatNumber = seat.textContent.trim().toUpperCase();
+                if (seatNumber && seatNumbers.has(seatNumber)) {
+                    seat.classList.add('duplicate');
+                } else {
+                    seat.classList.remove('duplicate');
+                    if (seatNumber) {
+                        seatNumbers.add(seatNumber);
+                    }
+                }
+            });
+        }
 
-            if (numberOfSeats > totalSeats) {
-                alert('Số ghế đã chọn vượt quá số ghế tối đa.');
-                event.preventDefault();
+        document.getElementById('seatsForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const seatMatrix = getSeatMatrix();
+            const filledSeats = seatMatrix.flat().filter(seat => seat !== '');
+
+            if (filledSeats.length > totalSeats) {
+                alert(`Bạn đã nhập quá số ghế cho phép. Số ghế tối đa là ${totalSeats}.`);
+                return;
+            }
+
+            if (filledSeats.length < totalSeats) {
+                alert(`Bạn chưa nhập đủ số ghế. Cần nhập ${totalSeats} ghế.`);
+                return;
+            }
+
+            const uniqueSeats = new Set(filledSeats.map(seat => seat.toUpperCase()));
+            if (filledSeats.length !== uniqueSeats.size) {
+                alert('Có mã ghế bị trùng. Vui lòng kiểm tra lại.');
                 return;
             }
 
             document.getElementById('seatData').value = JSON.stringify(seatMatrix);
+            this.submit();
         });
 
         function getSeatMatrix() {
@@ -233,7 +272,7 @@
                 const rowArray = [];
 
                 for (let j = 0; j < cols.length; j++) {
-                    rowArray.push(cols[j].textContent.trim() || '');
+                    rowArray.push(cols[j].textContent.trim().toUpperCase() || '');
                 }
                 matrix.push(rowArray);
             }

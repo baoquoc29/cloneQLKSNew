@@ -48,7 +48,8 @@
         margin-bottom: 25px;
     }
 
-    .form-control, .btn {
+    .form-control,
+    .btn {
         border-radius: 10px;
     }
 
@@ -145,6 +146,46 @@
             width: 100%;
         }
     }
+
+    .btn-select.btn-secondary {
+        background-color: #6c757d;
+        cursor: not-allowed;
+    }
+
+    .btn-select.btn-secondary:hover {
+        background-color: #5a6268;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .pagination {
+        display: flex;
+        list-style: none;
+        padding: 0;
+    }
+
+    .pagination li {
+        margin: 0 5px;
+    }
+
+    .pagination li a, .pagination li span {
+        display: block;
+        padding: 5px 10px;
+        border: 1px solid #4e54c8;
+        color: #4e54c8;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+
+    .pagination li.active span {
+        background-color: #4e54c8;
+        color: white;
+    }
+
+    .pagination li a:hover {
+        background-color: #4e54c8;
+        color: white;
+    }
 </style>
 
 @section('content')
@@ -179,14 +220,24 @@
                             value="{{ $departureDate }}">
                     </div>
                     <div class="filter-item">
+                        <label for="time-range"><i class="far fa-clock mr-2"></i>Thời gian xuất phát</label>
+                        <select class="form-control" id="time-range" name="time-range">
+                            <option value="All" @if ($timeRange == 'All') selected @endif>Tất cả</option>
+                            <option value="morning" @if ($timeRange == 'morning') selected @endif>Sáng (5:00 - 11:59)
+                            </option>
+                            <option value="afternoon" @if ($timeRange == 'afternoon') selected @endif>Chiều (12:00 -
+                                17:59)</option>
+                            <option value="evening" @if ($timeRange == 'evening') selected @endif>Tối (18:00 - 4:59)
+                            </option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
                         <label for="car-type"><i class="fas fa-bus mr-2"></i>Loại xe</label>
                         <select class="form-control" id="car-type" name="car-type">
-                            @if ($carType != null)
-                            <option value="{{ $carType }}" selected>{{ $carType == "All" ? "Tất cả" : $carType }}</option>
-                            @endif
-                            <option value="Tất cả">Tất cả</option>
+                            <option value="All" @if ($carTypeRequest == 'All') selected @endif>Tất cả</option>
                             @foreach ($carTypes as $carType)
-                                <option value="{{ $carType['name'] }}">{{ $carType['name'] }}</option>
+                                <option value="{{ $carType['name'] }}" @if ($carTypeRequest == $carType['name']) selected @endif>
+                                    {{ $carType['name'] }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -198,7 +249,8 @@
                         <input type="hidden" id="price-min" name="price-min">
                         <input type="hidden" id="price-max" name="price-max">
                     </div>
-                    <button type="submit" class="btn btn-primary mt-3 btn-block"><i class="fas fa-search mr-2"></i>Tìm Kiếm</button>
+                    <button type="submit" class="btn btn-primary mt-3 btn-block"><i class="fas fa-search mr-2"></i>Tìm
+                        Kiếm</button>
                 </form>
             </div>
 
@@ -211,7 +263,10 @@
                         <div class="trip-info">
                             <div class="info-item">
                                 @php
-                                    $percentageAvailableSeats = ($filteredTripDetail['availableSeats'] / $filteredTripDetail['tripDetail']['car']['numberOfSeats']) * 100;
+                                    $percentageAvailableSeats =
+                                        ($filteredTripDetail['availableSeats'] /
+                                            $filteredTripDetail['tripDetail']['car']['numberOfSeats']) *
+                                        100;
                                     $departureTime = $filteredTripDetail['tripDetail']['departureTime'];
                                     $destinationTime = $filteredTripDetail['tripDetail']['destinationTime'];
                                     $departureDateTime = new DateTime($departureTime);
@@ -224,30 +279,47 @@
                                     $formattedDestinationTime = $destinationDateTime->format('H:i');
                                     $hours = $interval->h;
                                     $minutes = $interval->i;
-                                    $formattedDuration = $minutes > 0 ? $hours . ' giờ ' . $minutes . ' phút' : $hours . ' giờ';
+                                    $formattedDuration =
+                                        $minutes > 0 ? $hours . ' giờ ' . $minutes . ' phút' : $hours . ' giờ';
                                 @endphp
                                 <strong style="color: #4e54c8; font-weight: bold;">
-                                    <i class="far fa-clock mr-2"></i>{{ substr($filteredTripDetail['tripDetail']['departureTime'], 0, 5) . ' - ' . substr($filteredTripDetail['tripDetail']['destinationTime'], 0, 5) }}
+                                    <i
+                                        class="far fa-clock mr-2"></i>{{ substr($filteredTripDetail['tripDetail']['departureTime'], 0, 5) . ' - ' . substr($filteredTripDetail['tripDetail']['destinationTime'], 0, 5) }}
                                 </strong><br>
                                 <small style="color: #6c757d; font-weight: bold;">
                                     <i class="fas fa-hourglass-half mr-2"></i>{{ $formattedDuration }}
                                 </small>
                             </div>
                             <div class="info-item" style="font-weight: bold;">
-                                <i class="fas fa-route mr-2"></i>{{ $filteredTripDetail['tripDetail']['trip']['departure'] . ' - ' . $filteredTripDetail['tripDetail']['trip']['destination'] }}
+                                <i
+                                    class="fas fa-route mr-2"></i>{{ $filteredTripDetail['tripDetail']['trip']['departure'] . ' - ' . $filteredTripDetail['tripDetail']['trip']['destination'] }}
                             </div>
-                            <div class="info-item" style="color: {{ $percentageAvailableSeats >= 50 ? '#28a745' : ($percentageAvailableSeats >= 20 ? '#ffc107' : '#dc3545') }}; font-weight: bold;">
-                                <i class="fas fa-users mr-2"></i>{{ $filteredTripDetail['availableSeats'] . '/' . $filteredTripDetail['tripDetail']['car']['numberOfSeats'] }} chỗ trống<br>
+                            <div class="info-item"
+                                style="color: {{ $percentageAvailableSeats >= 50 ? '#28a745' : ($percentageAvailableSeats >= 20 ? '#ffc107' : '#dc3545') }}; font-weight: bold;">
+                                <i
+                                    class="fas fa-users mr-2"></i>{{ $filteredTripDetail['availableSeats'] . '/' . $filteredTripDetail['tripDetail']['car']['numberOfSeats'] }}
+                                chỗ trống<br>
                                 <small style="color: #6c757d; font-weight: bold;">
-                                    <i class="fas fa-bus mr-2"></i>{{ $filteredTripDetail['tripDetail']['car']['carType']['name'] }}
+                                    <i
+                                        class="fas fa-bus mr-2"></i>{{ $filteredTripDetail['tripDetail']['car']['carType']['name'] }}
                                 </small>
                             </div>
                             <div class="info-item" style="color: #dc3545; font-weight: bold;">
-                                <i class="fas fa-tag mr-2"></i>{{ number_format($filteredTripDetail['tripDetail']['price'], 0, ',', '.') }} VNĐ
+                                <i
+                                    class="fas fa-tag mr-2"></i>{{ number_format($filteredTripDetail['tripDetail']['price'], 0, ',', '.') }}
+                                VNĐ
                             </div>
                             <div class="info-item">
-                                <a href="{{ route('booking.process', ['tripDetailId' => $filteredTripDetail['tripDetail']['tripDetailId'], 'departureDate' => $departureDate]) }}"
-                                    class="btn btn-success btn-select"><i class="fas fa-ticket-alt mr-2"></i>Đặt chỗ</a>
+                                @if ($filteredTripDetail['availableSeats'] > 0)
+                                    <a href="{{ route('booking.process', ['tripDetailId' => $filteredTripDetail['tripDetail']['tripDetailId'], 'departureDate' => $departureDate]) }}"
+                                        class="btn btn-success btn-select">
+                                        <i class="fas fa-ticket-alt mr-2"></i>Đặt chỗ
+                                    </a>
+                                @else
+                                    <button class="btn btn-secondary btn-select" disabled>
+                                        <i class="fas fa-ban mr-2"></i>Hết vé
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -255,6 +327,8 @@
                     <p class="alert alert-info"><i class="fas fa-info-circle mr-2"></i>Không có chuyến nào</p>
                 @endif
             </div>
+
+            
         </div>
     </div>
     <script>

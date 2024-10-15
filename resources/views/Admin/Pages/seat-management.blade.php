@@ -78,9 +78,9 @@
         <div class="panel">
             <div class="panel-header">
                 <div class="d-flex justify-content-between mb-3">
-                    <div>
+                    {{-- <div>
                         <input type="text" class="form-control search-input" placeholder="Tìm kiếm xe...">
-                    </div>
+                    </div> --}}
                 </div>
             </div>
             <div class="panel-body">

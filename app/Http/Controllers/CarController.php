@@ -10,6 +10,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class CarController extends Controller
 {
+    private $search = false;
     private const PAGE_SIZE = 5;
 
     // Phương thức để hiển thị danh sách xe với phân trang
@@ -39,14 +40,20 @@ class CarController extends Controller
         session()->forget('message');
 
         $carTypes = CarTypeController::getAllCarType();
+        $carTypeSearch = 'All';
+        $status = 'All';
 
+        $search = false;
         return view('Admin.Pages.car', [
             'cars' => $cars,
             'totalPages' => $totalPages,
             'currentPage' => $page,
             'pageSize' => self::PAGE_SIZE,
             'message' => $message,
-            'carTypes' => $carTypes
+            'carTypes' => $carTypes,
+            'carTypeSearch' => $carTypeSearch,
+            'status' => $status,
+            'search' => $search
         ]);
     }
 
@@ -120,7 +127,7 @@ class CarController extends Controller
     {
         $carTypeId = $request->input('carType');
         $carType = CarTypeController::findCarTypeById($carTypeId);
-            
+
         $carRequest = [
             'carType' => $carType,
             'licensePlate' => $request->input('carLicensePlate'),
@@ -177,5 +184,71 @@ class CarController extends Controller
         $currentPage = ($totalElements % $pageSize == 1 && $currentPage == $totalPages) ? $currentPage - 1 : $currentPage;
 
         return redirect()->route('car', ['page' => $currentPage]);
+    }
+
+    public function search(Request $request, $page = 1)
+    {
+        // Lấy tên loại xe từ yêu cầu
+        $licensePlate = $request->input('licensePlate');
+        $carTypeSearch = $request->input('carTypeSearch');
+        $numberOfSeats = $request->input('numberOfSeats');
+        $status = $request->input('status');
+        
+  
+        if ($licensePlate == '' &&  $carTypeSearch == 'All' &&   $numberOfSeats == '' &&  $status == 'All')
+            return redirect()->route('car', $page = 1);
+
+        // Tạo đường dẫn API dựa trên các tham số
+        $apiUrl = 'http://localhost:8080/api/car/search?';
+
+        // Thêm các tham số vào URL nếu có giá trị
+        if ($licensePlate != '') {
+            $apiUrl .= 'licensePlate=' . urlencode($licensePlate) . '&';
+        }
+        if ($carTypeSearch != 'All') {
+            $apiUrl .= 'carTypeName=' . urlencode($carTypeSearch) . '&';
+        }
+        if ($numberOfSeats != '') {
+            $apiUrl .= 'numberOfSeats=' . $numberOfSeats . '&';
+        }
+
+        if ($status != 'All') {
+            $apiUrl .= 'status=' . urlencode($status) . '&';
+        }
+
+        // Thêm phân trang (số trang và kích thước trang)
+        $pageNo = 0; // có thể lấy từ request hoặc gán mặc định
+        $pageSize = 5; // số lượng mục mỗi trang
+        $apiUrl .= 'pageNo=' . $pageNo . '&pageSize=' . $pageSize;
+
+        // Bỏ dấu '&' cuối cùng (nếu có)
+        $apiUrl = rtrim($apiUrl, '&');
+
+        // Gọi API để lấy dữ liệu loại xe theo tên với phân trang
+        $apiResponse = ApiController::getData($apiUrl);
+
+        $cars = $apiResponse['cars'];
+        $totalPages = $apiResponse['totalPages'];
+
+        // Lấy thông báo từ session và xóa nó
+        $message = session()->get('message');
+        session()->forget('message'); // Xóa thông báo khỏi session
+
+        $carTypes = CarTypeController::getAllCarType();
+
+        $search = true;
+        return view('Admin.Pages.car', [
+            'carTypes' => $carTypes,
+            'totalPages' => $totalPages,
+            'currentPage' => $page,
+            'pageSize' => self::PAGE_SIZE,
+            'message' => $message,
+            'licensePlate' => $licensePlate,
+            'carTypeSearch' => $carTypeSearch,
+            'numberOfSeats' => $numberOfSeats,
+            'status' => $status,
+            'cars' => $cars,
+            'search' => $search
+        ]);
     }
 }

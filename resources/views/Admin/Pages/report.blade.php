@@ -71,9 +71,10 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">Thống Kê Doanh Thu</h5>
                 <div>
-                    <button class="btn btn-primary btn-sm" onclick="exportPDF()">Xuất PDF</button>
-                    <button class="btn btn-success btn-sm" onclick="exportExcel()">Xuất Excel</button>
-                    <button class="btn btn-warning btn-sm" onclick="exportWord()">Xuất Word</button>
+                    <form action="{{ route('report.excel') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-success btn-sm">Xuất Excel</button>
+                    </form>
                 </div>
             </div>
             <div class="card-body">
@@ -142,10 +143,10 @@
                                     <td>{{ $numberOrder++ }}</td>
                                     <td>{{ $booking['customerName'] }}</td>
                                     <td>{{ $booking['trip'] }}</td>
-                                    <td>{{ $booking['ticketCount'] == 0 ? ' - ' : $booking['ticketCount'] }}</td>
+                                    <td>{{ $booking['ticketCount']  }}</td>
                                     <td>{{ $booking['bookingDate'] }}</td>
                                     <td>{{ $booking['departureDate'] }}</td>
-                                    <td>{{ $booking['totalAmount'] == 0 ? '-' : number_format($booking['totalAmount'], 0, ',', '.') . ' VNĐ' }}
+                                    <td>{{ number_format($booking['totalAmount'], 0, ',', '.') . ' VNĐ' }}
                                     </td>
                                     <td>
                                         @if (strtolower($booking['status']) == 'confirmed')
