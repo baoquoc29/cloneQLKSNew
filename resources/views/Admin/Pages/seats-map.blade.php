@@ -199,7 +199,7 @@
                     seatDiv.className = 'seat';
                     seatDiv.contentEditable = true;
 
-                    seatDiv.oninput = function() {
+                    seatDiv.addEventListener('input', function(e) {
                         let seatNumber = this.textContent.trim().toUpperCase();
                         if (seatNumber.length > 3) {
                             seatNumber = seatNumber.slice(0, 3);
@@ -208,17 +208,49 @@
                         
                         if (seatNumber) {
                             this.classList.add('selected');
+                            if (isDuplicateSeat(seatNumber, this)) {
+                                this.classList.add('duplicate');
+                                alert('Mã ghế này đã tồn tại. Vui lòng nhập mã khác.');
+                                disableOtherSeats(this);
+                            } else {
+                                this.classList.remove('duplicate');
+                                enableAllSeats();
+                            }
                         } else {
-                            this.classList.remove('selected');
+                            this.classList.remove('selected', 'duplicate');
+                            enableAllSeats();
                         }
 
-                        checkDuplicateSeats();
-                    };
+                        // Đặt con trỏ ở cuối nội dung
+                        const range = document.createRange();
+                        const sel = window.getSelection();
+                        range.setStart(this.childNodes[0] || this, this.textContent.length);
+                        range.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    });
+
+                    seatDiv.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            this.blur();
+                        }
+                    });
 
                     rowDiv.appendChild(seatDiv);
                 }
                 seatMap.appendChild(rowDiv);
             }
+        }
+
+        function isDuplicateSeat(seatNumber, currentSeat) {
+            const seats = document.querySelectorAll('.seat');
+            for (let seat of seats) {
+                if (seat !== currentSeat && seat.textContent.trim().toUpperCase() === seatNumber) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         function checkDuplicateSeats() {
@@ -278,6 +310,24 @@
             }
 
             return matrix;
+        }
+
+        function disableOtherSeats(currentSeat) {
+            const seats = document.querySelectorAll('.seat');
+            seats.forEach(seat => {
+                if (seat !== currentSeat) {
+                    seat.contentEditable = false;
+                    seat.classList.add('disabled');
+                }
+            });
+        }
+
+        function enableAllSeats() {
+            const seats = document.querySelectorAll('.seat');
+            seats.forEach(seat => {
+                seat.contentEditable = true;
+                seat.classList.remove('disabled');
+            });
         }
     </script>
 @endsection

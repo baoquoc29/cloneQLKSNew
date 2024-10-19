@@ -103,7 +103,7 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>No</th>
+                                    <th>STT</th>
                                     <th>Tên Loại Xe</th>
                                     <th>Ngày tạo</th>
                                     <th>Ngày cập nhật</th>
@@ -121,15 +121,17 @@
                                         <td>{{ $carType['createdAt'] }}</td>
                                         <td>{{ $carType['updatedAt'] }}</td>
                                         <td>
-                                            <a href="#" class="btn btn-info btn-sm action-icons" title="Xem"><i
-                                                    class="fas fa-eye"></i></a>
+                                            {{-- <a href="#" class="btn btn-info btn-sm action-icons" title="Xem"><i
+                                                    class="fas fa-eye"></i></a> --}}
                                             <a href="#" class="btn btn-warning btn-sm action-icons"
                                                 data-bs-toggle="modal" data-bs-target="#updateCarTypeModal"
                                                 data-id="{{ $carType['carTypeId'] }}" data-name="{{ $carType['name'] }}"
                                                 title="Sửa"><i class="fas fa-edit"></i></a>
-                                            <a href="#" class="btn btn-danger btn-sm action-icons" title="Xóa"
-                                                onclick="confirmDelete('{{ route('car-type.delete', ['carTypeId' => $carType['carTypeId']]) }}')"><i
-                                                    class="fas fa-trash-alt"></i></a>
+                                            <a href="{{ route('car-type.delete', ['carTypeId' => $carType['carTypeId']]) }}" 
+                                               class="btn btn-danger btn-sm action-icons btn-delete" 
+                                               title="Xóa">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </a>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -243,14 +245,14 @@
 
     <script>
         function isValidCarTypeName(name) {
-            // Chỉ cho phép chữ cái, số, dấu cách và dấu gạch ngang
-            return /^[a-zA-Z0-9\s-]+$/.test(name);
+            // Cho phép chữ cái (bao gồm dấu tiếng Việt), số, dấu cách và dấu gạch ngang
+            return /^[a-zA-Z0-9\sÀ-ỹ-]+$/.test(name);
         }
 
         function validateCarTypeInput(inputElement, errorElement) {
             inputElement.addEventListener('input', function() {
                 if (!isValidCarTypeName(this.value)) {
-                    errorElement.textContent = 'Tên loại xe không được chứa ký tự đặc biệt';
+                    errorElement.textContent = 'Tên loại xe chỉ được chứa chữ cái, số, dấu cách và dấu gạch ngang';
                     this.classList.add('is-invalid');
                 } else {
                     errorElement.textContent = '';
@@ -258,11 +260,12 @@
                 }
             });
 
-            inputElement.addEventListener('keypress', function(e) {
-                if (!isValidCarTypeName(e.key)) {
-                    e.preventDefault();
-                }
-            });
+            // Bỏ phần ngăn chặn keypress vì nó có thể gây khó khăn khi nhập tiếng Việt
+            // inputElement.addEventListener('keypress', function(e) {
+            //     if (!isValidCarTypeName(e.key)) {
+            //         e.preventDefault();
+            //     }
+            // });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -306,15 +309,34 @@
 
                 // Update form action dynamically
                 var formAction = document.getElementById('updateCarTypeForm').action;
-                document.getElementById('updateCarTypeForm').action = formAction.replace(/\/\d+$/, '/' +
-                    id);
+                document.getElementById('updateCarTypeForm').action = formAction.replace(/\/\d+$/, '/' + id);
+            });
+
+            // Cập nhật sự kiện cho nút xóa
+            document.querySelectorAll('.btn-delete').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const url = this.getAttribute('href');
+                    confirmDelete(url);
+                });
             });
         });
 
         function confirmDelete(url) {
-            if (confirm('Bạn có chắc chắn muốn xóa loại xe này không?')) {
-                window.location.href = url;
-            }
+            Swal.fire({
+                title: 'Bạn có chắc chắn muốn xóa?',
+                text: "Bạn sẽ không thể hoàn tác hành động này!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Đồng ý, xóa!',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
         }
 
         @if ($message != null)

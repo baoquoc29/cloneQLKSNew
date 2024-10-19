@@ -143,10 +143,10 @@
                                     <td>{{ $numberOrder++ }}</td>
                                     <td>{{ $booking['customerName'] }}</td>
                                     <td>{{ $booking['trip'] }}</td>
-                                    <td>{{ $booking['ticketCount']  }}</td>
+                                    <td>{{ $booking['ticketCount'] == null ? ' - ' : $booking['ticketCount'] }}</td>
                                     <td>{{ $booking['bookingDate'] }}</td>
                                     <td>{{ $booking['departureDate'] }}</td>
-                                    <td>{{ number_format($booking['totalAmount'], 0, ',', '.') . ' VNĐ' }}
+                                    <td>{{ $booking['totalAmount'] == null ? '-' : number_format($booking['totalAmount'], 0, ',', '.') . ' VNĐ' }}
                                     </td>
                                     <td>
                                         @if (strtolower($booking['status']) == 'confirmed')

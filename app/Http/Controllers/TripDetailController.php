@@ -345,6 +345,7 @@ class TripDetailController extends Controller
         ];
 
         $apiResponse = ApiController::postData(ApiEndpoints::API_TRIP_DETAIL_ADD, $tripDetailRequest);
+
         // Kiểm tra xem $apiResponse có phải là một đối tượng JsonResponse không
         if ($apiResponse instanceof \Illuminate\Http\JsonResponse) {
             $responseData = $apiResponse->getData(true); // Chuyển đổi JsonResponse thành mảng

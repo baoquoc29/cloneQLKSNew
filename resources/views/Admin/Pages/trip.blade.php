@@ -143,7 +143,7 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>No</th>
+                                    <th>STT</th>
                                     <th>Điểm khởi hành</th>
                                     <th>Điểm đến</th>
                                     <th>Ngày tạo</th>
@@ -163,8 +163,8 @@
                                         <td>{{ $trip['createdAt'] }}</td>
                                         <td>{{ $trip['updatedAt'] }}</td>
                                         <td>
-                                            <a href="#" class="btn btn-info btn-sm action-icons" title="Xem"><i
-                                                    class="fas fa-eye"></i></a>
+                                            {{-- <a href="#" class="btn btn-info btn-sm action-icons" title="Xem"><i
+                                                    class="fas fa-eye"></i></a> --}}
 
                                             <a href="#" class="btn btn-warning btn-sm action-icons"
                                                 data-bs-toggle="modal" data-bs-target="#updateTripModal"
@@ -322,17 +322,26 @@
         });
 
         function confirmDelete(url) {
-            // Hiển thị hộp thoại xác nhận
-            if (confirm('Bạn có chắc chắn muốn xóa chuyến đi này không?')) {
-                // Nếu người dùng chọn OK, điều hướng tới URL xóa
-                window.location.href = url;
-            }
+            Swal.fire({
+                title: 'Bạn có chắc chắn muốn xóa?',
+                text: "Bạn sẽ không thể hoàn tác hành động này!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Đồng ý, xóa!',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
         }
 
 
         @if ($message != null)
             Swal.fire({
-                icon: 'success',
+                icon: '{{ $message === 'Thêm chuyến thành công' || $message === 'Cập nhật chuyến thành công' ? 'success' : 'error' }}',
                 title: 'Thông báo!',
                 text: '{{ $message }}',
                 toast: false,

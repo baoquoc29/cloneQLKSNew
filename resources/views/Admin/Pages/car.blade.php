@@ -99,7 +99,7 @@
                                             <label for="numberOfSeats">Số ghế</label>
                                             <input type="number" class="form-control" id="numberOfSeats"
                                                 name="numberOfSeats" placeholder="Nhập số ghế"
-                                                value="{{ $numberOfSeats ?? '' }}" min="1" max="50">
+                                                value="{{ $numberOfSeats ?? '' }}" min="4" max="100">
                                         </div>
                                     </div>
 
@@ -157,7 +157,7 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>No</th>
+                                    <th>STT</th>
                                     <th>Biển số xe</th>
                                     <th>Loại xe</th>
                                     <th>Số ghế</th>
@@ -181,8 +181,8 @@
                                         <td>{{ $car['createdAt'] }}</td>
                                         <td>{{ $car['updatedAt'] }}</td>
                                         <td>
-                                            <a href="#" class="btn btn-info btn-sm action-icons" title="Xem"><i
-                                                    class="fas fa-eye"></i></a>
+                                            {{-- <a href="#" class="btn btn-info btn-sm action-icons" title="Xem"><i
+                                                    class="fas fa-eye"></i></a> --}}
                                             <a href="#" class="btn btn-warning btn-sm action-icons"
                                                 data-bs-toggle="modal" data-bs-target="#updateCarModal"
                                                 data-id="{{ $car['carId'] }}"
@@ -191,9 +191,11 @@
                                                 data-seats="{{ $car['numberOfSeats'] }}"
                                                 data-status="{{ $car['status'] }}" title="Sửa"><i
                                                     class="fas fa-edit"></i></a>
-                                            <a href="#" class="btn btn-danger btn-sm action-icons" title="Xóa"
-                                                onclick="confirmDelete('{{ route('car.delete', ['carId' => $car['carId']]) }}')"><i
-                                                    class="fas fa-trash-alt"></i></a>
+                                            <a href="#" class="btn btn-danger btn-sm action-icons btn-delete" 
+                                               data-delete-url="{{ route('car.delete', ['carId' => $car['carId']]) }}" 
+                                               title="Xóa">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </a>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -275,7 +277,8 @@
                         <div class="mb-3">
                             <label for="carLicensePlate" class="form-label">Biển số xe</label>
                             <input type="text" class="form-control" id="carLicensePlate" name="carLicensePlate"
-                                required>
+                                required maxlength="10">
+                            <div id="carLicensePlateError" class="invalid-feedback"></div>
                         </div>
                         <div class="mb-3">
                             <label for="carType" class="form-label">Loại xe</label>
@@ -325,7 +328,8 @@
                         <div class="mb-3">
                             <label for="updateCarLicensePlate" class="form-label">Biển số xe</label>
                             <input type="text" class="form-control" id="updateCarLicensePlate" name="carLicensePlate"
-                                required>
+                                required maxlength="10">
+                            <div id="updateCarLicensePlateError" class="invalid-feedback"></div>
                         </div>
                         <div class="mb-3">
                             <label for="updateCarType" class="form-label">Loại xe</label>
@@ -413,14 +417,25 @@
         });
 
         function confirmDelete(url) {
-            if (confirm('Bạn có chắc chắn muốn xóa xe này?')) {
-                window.location.href = url;
-            }
+            Swal.fire({
+                title: 'Bạn có chắc chắn muốn xóa?',
+                text: "Bạn sẽ không thể hoàn tác hành động này!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Đồng ý, xóa!',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
         }
 
         @if ($message != null)
             Swal.fire({
-                icon: 'success',
+                icon: '{{ $message === 'Thêm xe thành công' || $message === 'Cập nhật xe thành công' ? 'success' : 'error' }}',
                 title: 'Thông báo!',
                 text: '{{ $message }}',
                 toast: false,
@@ -439,13 +454,22 @@
     <script>
         function isValidLicensePlate(licensePlate) {
             // Biểu thức chính quy cho biển số xe Việt Nam
-            const regex = /^(1[1-9]|[2-9][0-9])[A-Z][1-9]\d{4}$/;
+            const regex = /^(1[1-9]|[2-9][0-9])[A-Z](-|\s)?(\d{3}(\.\d{2}|\d{2})|\d{4,5})$/;
             return regex.test(licensePlate);
         }
 
-        function isValidLicensePlateChar(char) {
-            // Chỉ cho phép số, chữ cái in hoa và dấu gạch ngang
-            return /[0-9A-Z-]/.test(char);
+        function isValidLicensePlateChar(char, position) {
+            if (position < 2) {
+                return /[1-9]/.test(char);
+            } else if (position === 2) {
+                return /[A-Z]/.test(char);
+            } else if (position === 3) {
+                return /[-\s\d]/.test(char);
+            } else if (position === 7) {
+                return /[\d.]/.test(char);
+            } else {
+                return /\d/.test(char);
+            }
         }
 
         function validateAddCarForm() {
@@ -456,7 +480,7 @@
             let isValid = true;
 
             if (!isValidLicensePlate(licensePlate.value)) {
-                licensePlateError.textContent = 'Biển số xe không hợp lệ';
+                licensePlateError.textContent = 'Biển số xe không hợp lệ. Vui lòng nhập theo định dạng: 51A-12345, 51A 123.45 hoặc 51A12345';
                 licensePlate.classList.add('is-invalid');
                 isValid = false;
             } else {
@@ -465,8 +489,8 @@
             }
 
             const seats = parseInt(seatNumber.value);
-            if (isNaN(seats) || seats < 4 || seats > 70) {
-                seatNumberError.textContent = 'Số ghế phải từ 4 đến 70';
+            if (isNaN(seats) || seats < 4 || seats > 100) {
+                seatNumberError.textContent = 'Số ghế phải từ 4 đến 100';
                 seatNumber.classList.add('is-invalid');
                 isValid = false;
             } else {
@@ -485,7 +509,7 @@
             let isValid = true;
 
             if (!isValidLicensePlate(licensePlate.value)) {
-                licensePlateError.textContent = 'Biển số xe không hợp lệ';
+                licensePlateError.textContent = 'Biển số xe không hợp lệ. Vui lòng nhập theo định dạng: 51A-12345, 51A 123.45 hoặc 51A12345';
                 licensePlate.classList.add('is-invalid');
                 isValid = false;
             } else {
@@ -494,8 +518,8 @@
             }
 
             const seats = parseInt(seatNumber.value);
-            if (isNaN(seats) || seats < 4 || seats > 70) {
-                seatNumberError.textContent = 'Số ghế phải từ 4 đến 70';
+            if (isNaN(seats) || seats < 4 || seats > 100) {
+                seatNumberError.textContent = 'Số ghế phải từ 4 đến 100';
                 seatNumber.classList.add('is-invalid');
                 isValid = false;
             } else {
@@ -505,5 +529,52 @@
 
             return isValid;
         }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const licensePlateInputs = document.querySelectorAll('#carLicensePlate, #updateCarLicensePlate');
+            
+            licensePlateInputs.forEach(input => {
+                input.addEventListener('input', function(e) {
+                    let value = this.value.toUpperCase();
+                    let newValue = '';
+                    
+                    for (let i = 0; i < value.length && i < 12; i++) {
+                        if (isValidLicensePlateChar(value[i], i)) {
+                            newValue += value[i];
+                        }
+                    }
+                    
+                    this.value = newValue;
+                    
+                    const errorElement = this.nextElementSibling;
+                    if (newValue.length >= 7 && !isValidLicensePlate(newValue)) {
+                        errorElement.textContent = 'Biển số xe không hợp lệ. Vui lòng nhập theo định dạng: 51A-12345, 51A 123.45 hoặc 51A12345';
+                        this.classList.add('is-invalid');
+                    } else {
+                        errorElement.textContent = '';
+                        this.classList.remove('is-invalid');
+                    }
+                });
+            });
+            
+            // ... (giữ nguyên code khác)
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... (giữ nguyên code khác)
+
+            // Xử lý sự kiện click cho nút xóa
+            document.querySelectorAll('.btn-delete').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const url = this.getAttribute('data-delete-url');
+                    confirmDelete(url);
+                });
+            });
+        });
     </script>
 @endsection

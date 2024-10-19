@@ -49,7 +49,7 @@
                                     <input type="text" class="form-control" id="confirmationCode" name="confirmationCode"
                                         placeholder="Nhập mã xác nhận" required>
                                     <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary" type="button" id="resendCode">Gửi lại
+                                        <button class="btn btn-outline-secondary" type="submit" id="resendCode">Gửi lại
                                             mã</button>
                                     </div>
                                 </div>

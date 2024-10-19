@@ -57,6 +57,7 @@ class TripController extends Controller
         ]);
 
         $trips = $response['data']['items'];
+        
         $totalPages = $response['data']['totalPage'];
         $totalElements = $response['data']['totalElements'];
 

@@ -185,7 +185,7 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>No</th>
+                                    <th>STT</th>
                                     <th>Địa điểm đi</th>
                                     <th>Địa điểm đến</th>
                                     <th>Xe</th>
@@ -213,8 +213,8 @@
                                         {{-- <td>{{ $tripDetail['createdAt'] }}</td>
                                         <td>{{ $tripDetail['updatedAt'] }}</td> --}}
                                         <td>
-                                            <a href="#" class="btn btn-info btn-sm action-icons" title="Xem"><i
-                                                    class="fas fa-eye"></i></a>
+                                            {{-- <a href="#" class="btn btn-info btn-sm action-icons" title="Xem"><i
+                                                    class="fas fa-eye"></i></a> --}}
 
                                             <a href="#" class="btn btn-warning btn-sm action-icons"
                                                 data-bs-toggle="modal" data-bs-target="#updateTripDetailModal"
@@ -481,9 +481,9 @@
 
         @if ($message != null)
             Swal.fire({
-                icon: 'success',
+                icon: '{{ $message === 'Thêm chi tiết chuyến thành công' || $message === 'Cập nhật chi tiết chuyến thành công' ? 'success' : 'error' }}',
                 title: 'Thông báo!',
-                text: '{{ $message }}',
+                text: '{{ $message == 'An error occurred' ? "Trùng lịch chạy" :   $message}}',
                 toast: false,
                 position: 'top',
                 showConfirmButton: false,

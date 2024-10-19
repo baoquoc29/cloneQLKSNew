@@ -241,19 +241,12 @@
 
             // Hàm để cập nhật các ràng buộc ngày
             function updateDateConstraints(startDateInput, endDateInput) {
-                startDateInput.min = today;
-                endDateInput.min = startDateInput.value || today;
+                endDateInput.min = startDateInput.value;
 
                 startDateInput.addEventListener('change', function() {
                     endDateInput.min = this.value;
-                    if (endDateInput.value < this.value) {
+                    if (endDateInput.value && endDateInput.value < this.value) {
                         endDateInput.value = this.value;
-                    }
-                });
-
-                endDateInput.addEventListener('change', function() {
-                    if (this.value < startDateInput.value) {
-                        this.value = startDateInput.value;
                     }
                 });
             }
@@ -261,19 +254,9 @@
             // Cập nhật cho modal thêm mới
             const addStartDate = document.getElementById('promotionStartDate');
             const addEndDate = document.getElementById('promotionEndDate');
-            
-            // Đặt giá trị mặc định cho ngày bắt đầu và ngày kết thúc là ngày hôm nay
             addStartDate.value = today;
             addEndDate.value = today;
-            
             updateDateConstraints(addStartDate, addEndDate);
-
-            // Cập nhật lại ngày mỗi khi modal thêm mới được mở
-            $('#addPromotionModal').on('show.bs.modal', function () {
-                addStartDate.value = today;
-                addEndDate.value = today;
-                updateDateConstraints(addStartDate, addEndDate);
-            });
 
             // Cập nhật cho modal sửa
             var updatePromotionModal = document.getElementById('updatePromotionModal');
@@ -303,12 +286,17 @@
             // Xử lý reset form tìm kiếm
             document.getElementById('resetSearchForm').addEventListener('click', function(e) {
                 e.preventDefault();
-                window.location.href = "{{ route('promotion') }}";
+                document.getElementById('searchPromotionCode').value = '';
+                document.getElementById('searchStartDate').value = '';
+                document.getElementById('searchEndDate').value = '';
+                document.getElementById('searchPromotionForm').submit();
             });
 
             // Cập nhật cho form tìm kiếm
             const searchStartDate = document.getElementById('searchStartDate');
             const searchEndDate = document.getElementById('searchEndDate');
+            
+            // Chỉ áp dụng ràng buộc ngày, không đặt giá trị mặc định
             updateDateConstraints(searchStartDate, searchEndDate);
         });
 

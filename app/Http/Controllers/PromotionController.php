@@ -137,7 +137,7 @@ class PromotionController extends Controller
 
         // Tạo đường dẫn API với các tham số
         $apiUrl = 'http://localhost:8080/api/promotions/search?';
-
+      
         // Thêm các tham số vào URL nếu có
         if ($searchPromotionCode != '') {
             $apiUrl .= 'code=' . urlencode($searchPromotionCode) . '&';
@@ -151,7 +151,7 @@ class PromotionController extends Controller
 
         // Bỏ dấu '&' cuối cùng (nếu có)
         $apiUrl = rtrim($apiUrl, '&');
-
+  
         // Gọi API và lấy kết quả
         $apiResponse = ApiController::getData($apiUrl);
       
