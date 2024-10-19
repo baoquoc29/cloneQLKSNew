@@ -16,6 +16,7 @@ class ApiEndpoints
     public const API_TRIP_ADD = self::BASE_URL . 'trip';
     public const API_TRIP_UPDATE = self::BASE_URL . 'trip/';
     public const API_TRIP_DELETE = self::BASE_URL . 'trip/';
+    public const API_TRIP_SEARCH_BY_ID = self::BASE_URL . 'trip/';
 
     // Trip Detail
     public const API_TRIP_DETAIL_SEARCH = self::BASE_URL . 'trip-detail/search?';

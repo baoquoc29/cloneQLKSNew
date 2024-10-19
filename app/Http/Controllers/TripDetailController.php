@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\FuncCall;
 use Illuminate\Support\Facades\Http; // Thư viện HTTP client của Laravel
 use Illuminate\Pagination\Paginator;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\App;
 
 class TripDetailController extends Controller
 {
@@ -294,7 +295,7 @@ class TripDetailController extends Controller
         // Lấy thông báo từ session và xóa nó
         $message = session()->get('message');
         session()->forget('message');
-        
+
         $carTypeSearch = $destination = $departure = 'All';
 
         $trips = TripController::getAllTrip();
@@ -329,20 +330,18 @@ class TripDetailController extends Controller
         $price = intval($request->input('price'));
         $departureTime = $request->input('departureTime') . ':00';
         $destinationTime = $request->input('destinationTime') . ':00';
-
+        $trip = ApiController::getData(ApiEndpoints::API_TRIP_SEARCH_BY_ID . $tripId);
+        $car = ApiController::getData(ApiEndpoints::API_CAR_SEARCH_BY_ID . $carId);
         // return $departureTime;
 
         $tripDetailRequest = [
-            "trip" => [
-                "tripId" => $tripId
-            ],
-            "car" => [
-                "carId" => $carId
-            ],
+            "trip" => $trip,
+            "car" => $car,
             "price" => $price,
             "departureTime" => $departureTime,
             "destinationTime" => $destinationTime
         ];
+
 
         $apiResponse = ApiController::postData(ApiEndpoints::API_TRIP_DETAIL_ADD, $tripDetailRequest);
 
@@ -390,19 +389,18 @@ class TripDetailController extends Controller
         $price = intval($request->input('price'));
         $departureTime = $request->input('departureTime');
         $destinationTime = $request->input('destinationTime');
+        $trip = ApiController::getData(ApiEndpoints::API_TRIP_SEARCH_BY_ID . $tripId);
+        $car = ApiController::getData(ApiEndpoints::API_CAR_SEARCH_BY_ID . $carId);
 
         $tripDetailRequest = [
-            "trip" => [
-                "tripId" => $tripId
-            ],
-            "car" => [
-                "carId" => $carId
-            ],
+            "trip" => $trip,
+            "car" => $car,
             "price" => $price,
             "departureTime" => $departureTime,
             "destinationTime" => $destinationTime
         ];
 
+  
         $apiResponse = ApiController::putData(ApiEndpoints::API_TRIP_DETAIL_UPDATE . $tripDetailId, $tripDetailRequest);
         // Kiểm tra xem $apiResponse có phải là một đối tượng JsonResponse không
         if ($apiResponse instanceof \Illuminate\Http\JsonResponse) {

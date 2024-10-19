@@ -262,6 +262,8 @@ class ReportController extends Controller
     
         // Gọi API để export file Excel
         $response = Http::post("http://localhost:8080/api/report/exportBookings", $data);
+
+
      
         // Kiểm tra xem API có phản hồi thành công không
         if ($response->ok()) {
