@@ -102,6 +102,8 @@ class PaymentController extends Controller
             "bankcode" => ""
         ];
 
+       // để yên t request api
+
         // appid|apptransid|appuser|amount|apptime|embeddata|item
         $data = $order["appid"] . "|" . $order["apptransid"] . "|" . $order["appuser"] . "|" . $order["amount"]
             . "|" . $order["apptime"] . "|" . $order["embeddata"] . "|" . $order["item"];

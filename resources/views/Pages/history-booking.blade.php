@@ -106,7 +106,6 @@
                                                         <form method="GET"
                                                             action="{{ route('confirm-cancel', ['bookingId' => $bookedTicket['bookingId']]) }}">
                                                             @csrf
-                                                            @method('DELETE')
                                                             <button type="submit" class="btn btn-danger btn-sm">Hủy
                                                                 vé</button>
                                                         </form>
@@ -191,6 +190,7 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+    
         $(document).ready(function() {
             let nameEntered = false;
             let emailEntered = false;

@@ -205,8 +205,9 @@ class BookingController extends Controller
 
     public static function confirmCancelTicket($bookingId)
     {
-        $bookedTicket = ApiController::getData("http://localhost:8080/api/booking/history-booked/" . $bookingId);
         $cancelTicket = ApiController::getData("http://localhost:8080/api/verification-code/" . $bookingId);
+        $bookedTicket = ApiController::getData("http://localhost:8080/api/booking/history-booked/" . $bookingId);
+
         // $cancelTicketCode = $cancelTicket['code'];
         // session()->put('cancelTicketCode', $cancelTicketCode);
         return view('Pages.cancel-ticket', compact('bookedTicket'));

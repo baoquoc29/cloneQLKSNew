@@ -121,8 +121,8 @@
                                     <td>{{ $promotion['startDate'] }}</td>
                                     <td>{{ $promotion['endDate'] }}</td>
                                     <td>
-                                        <a href="#" class="btn btn-sm btn-info action-icons" title="Xem"><i
-                                                class="fas fa-eye"></i></a>
+                                        {{-- <a href="#" class="btn btn-sm btn-info action-icons" title="Xem"><i
+                                                class="fas fa-eye"></i></a> --}}
                                         <a href="#" class="btn btn-sm btn-warning action-icons" data-bs-toggle="modal"
                                             data-bs-target="#updatePromotionModal" data-code="{{ $promotion['code'] }}"
                                             data-description="{{ $promotion['description'] }}"

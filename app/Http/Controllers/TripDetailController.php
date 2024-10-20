@@ -481,18 +481,18 @@ class TripDetailController extends Controller
         if ($carTypeSearch != 'All') {
             $apiUrl .= 'carTypeName=' . urlencode($carTypeSearch) . '&';
         }
-        if (!empty($priceFrom)) {
+   //     if (!empty($priceFrom)) {
             $apiUrl .= 'minPrice=' . $priceFrom . '&';
-        }
-        if (!empty($priceTo)) {
+       // }
+      //  if (!empty($priceTo)) {
             $apiUrl .= 'maxPrice=' . $priceTo . '&';
-        }
-        if (!empty($departureTimeFrom)) {
+       // }
+       // if (!empty($departureTimeFrom)) {
             $apiUrl .= 'startTime=' . urlencode($departureTimeFrom) . '&';
-        }
-        if (!empty($departureTimeTo)) {
+     //   }
+      //  if (!empty($departureTimeTo)) {
             $apiUrl .= 'endTime=' . urlencode($departureTimeTo) . '&';
-        }
+      //  }
 
         // Thêm phân trang (số trang và kích thước trang)
         $pageNo = $page - 1; // Đặt trang hiện tại (API trang đầu tiên là 0)
@@ -502,6 +502,7 @@ class TripDetailController extends Controller
         // Bỏ dấu '&' cuối cùng (nếu có)
         $apiUrl = rtrim($apiUrl, '&');
 
+       // return $apiUrl;
         // Gọi API để lấy dữ liệu loại chuyến xe với các tham số tìm kiếm
         $apiResponse = ApiController::getData($apiUrl);
 

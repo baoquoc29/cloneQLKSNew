@@ -47,7 +47,7 @@
                                 <label for="confirmationCode">Nhập mã xác nhận đã gửi vào email của bạn:</label>
                                 <div class="input-group">
                                     <input type="text" class="form-control" id="confirmationCode" name="confirmationCode"
-                                        placeholder="Nhập mã xác nhận" required>
+                                        placeholder="Nhập mã xác nhận">
                                     <div class="input-group-append">
                                         <button class="btn btn-outline-secondary" type="submit" id="resendCode">Gửi lại
                                             mã</button>

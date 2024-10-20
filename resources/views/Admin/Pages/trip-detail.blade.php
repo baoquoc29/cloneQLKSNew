@@ -207,7 +207,7 @@
                                         <td>{{ $tripDetail['trip']['destination'] }}</td>
                                         <td>{{ $tripDetail['car']['licensePlate'] }}</td>
                                         <td>{{ $tripDetail['car']['carType']['name'] }}</td>
-                                        <td>{{ $tripDetail['price'] }}</td>
+                                        <td>{{ number_format($tripDetail['price'], 0, ',', '.') }}</td>
                                         <td>{{ $tripDetail['departureTime'] }}</td>
                                         <td>{{ $tripDetail['destinationTime'] }}</td>
                                         {{-- <td>{{ $tripDetail['createdAt'] }}</td>

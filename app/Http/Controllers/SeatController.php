@@ -38,7 +38,7 @@ class SeatController extends Controller
 
         // Gửi dữ liệu JSON đến API
         $seatsMapResponse = ApiController::postData(ApiEndpoints::API_SEATS_MAP_ADD . $carId, $seatsMapRequest);
-       
+       return $seatsMapResponse;
         // Kiểm tra phản hồi từ API
         if ($seatsMapResponse !== null) {
             return redirect()->route('seats');
